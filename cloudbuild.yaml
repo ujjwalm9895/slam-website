@@ -27,4 +27,5 @@ steps:
 
 images:
   - 'gcr.io/$PROJECT_ID/nextjs-slam:$SHORT_SHA' 
-  #hello
+options:
+  logging: CLOUD_LOGGING_ONLY
