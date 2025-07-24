@@ -7,13 +7,13 @@ const team = [
     name: "Vijay Nagar",
     role: "Co-Founder & Vision Engineer",
     img: "/vijay.jpeg",
-    quote: "I believe technology should empower those who feed the world.",
+    quote: 'I believe technology should empower those who feed the world.',
   },
   {
     name: "Ujjwal Madawat",
     role: "Co-Founder & Machine Learning Engineer",
     img: "/ujjwal.jpg",
-    quote: "AI can transform Indian agriculture—making it smarter, fairer, and more human.",
+    quote: 'AI can transform Indian agriculture—making it smarter, fairer, and more human.',
   },
 ];
 
