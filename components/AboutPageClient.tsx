@@ -101,7 +101,7 @@ export default function AboutPageClient() {
               <span className="relative z-20 -mt-4 mb-2 bg-blue-600 dark:bg-blue-400 text-white text-xs px-3 py-1 rounded-full shadow animate-pulse border-2 border-white dark:border-gray-900">Co-Founder</span>
               <div className="font-semibold text-lg text-gray-800 dark:text-gray-100 mt-2 text-center">{member.name}</div>
               <div className="text-blue-700 dark:text-blue-400 text-sm font-medium mb-2 text-center">{member.role}</div>
-              <div className="italic text-gray-500 dark:text-gray-300 text-center text-sm">“{member.quote}”</div>
+              <div className="italic text-gray-500 dark:text-gray-300 text-center text-sm">&ldquo;{member.quote}&rdquo;</div>
             </div>
           ))}
         </div>
