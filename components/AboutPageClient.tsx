@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { Sparkles, Users, ShieldCheck, TrendingUp } from "lucide-react";
+import { Sparkles, Users, ShieldCheck, TrendingUp, Linkedin } from "lucide-react";
 
 const team = [
   {
@@ -8,17 +8,19 @@ const team = [
     role: "Co-Founder & Vision Engineer",
     img: "/vijay.jpeg",
     quote: 'I believe technology should empower those who feed the world.',
+    linkedin: "https://www.linkedin.com/in/vijay-nagar",
   },
   {
     name: "Ujjwal Madawat",
     role: "Co-Founder & Machine Learning Engineer",
     img: "/ujjwal.jpg",
     quote: 'AI can transform Indian agriculture—making it &quot;smarter&quot;, fairer, and more human.',
+    linkedin: "https://www.linkedin.com/in/ujjwal-madawat",
   },
 ];
 
 const impact = [
-  { icon: Users, label: "Farmers Empowered", value: "10,000+" },
+  { icon: Users, label: "Farmers Empowered", value: "100+" },
   { icon: TrendingUp, label: "AI for Bharat", value: "100%" },
   { icon: ShieldCheck, label: "Trust & Impact", value: "Nationwide" },
 ];
@@ -102,6 +104,16 @@ export default function AboutPageClient() {
               <div className="font-semibold text-lg text-gray-800 dark:text-gray-100 mt-2 text-center">{member.name}</div>
               <div className="text-blue-700 dark:text-blue-400 text-sm font-medium mb-2 text-center">{member.role}</div>
               <div className="italic text-gray-500 dark:text-gray-300 text-center text-sm" dangerouslySetInnerHTML={{ __html: member.quote }} />
+              <a
+                href={member.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`LinkedIn profile of ${member.name}`}
+                className="mt-3 inline-flex items-center gap-1 text-blue-700 dark:text-blue-400 hover:underline hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              >
+                <Linkedin className="inline-block size-5" />
+                <span className="sr-only">{member.name}&apos;s LinkedIn</span>
+              </a>
             </div>
           ))}
         </div>

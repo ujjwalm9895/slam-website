@@ -16,7 +16,8 @@ export function AnimatedMission() {
         </CardHeader>
         <CardContent>
           <p>
-            At SLAM Robotics, our mission is to revolutionize autonomous navigation with cutting-edge Simultaneous Localization and Mapping (SLAM) technology. We empower robots to understand and interact with the world in real time, making automation safer, smarter, and more accessible.
+            At SLAM Robotics, our mission is to revolutionize autonomous navigation with cutting-edge SLAM — Sense. Learn. Act. Move.  
+*(Also known as Smart Logistic Autonomy & Mobility — for robots of tomorrow)* technology. We empower robots to understand and interact with the world in real time, making automation safer, smarter, and more accessible.
           </p>
         </CardContent>
       </Card>
