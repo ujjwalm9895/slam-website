@@ -25,11 +25,11 @@ export default function HomePageClient() {
         </div>
         <div className="flex-1 flex items-center justify-center">
           <Image
-            src="/hero-farm-robot.svg"
+            src="/farming_robots.jpg"
             alt="SLAM Robotics in Farming"
             width={400}
             height={320}
-            className="rounded-2xl shadow-xl object-contain bg-blue-100 dark:bg-blue-900 p-4"
+            className="rounded-2xl shadow-xl object-cover bg-blue-100 dark:bg-blue-900 p-2"
             priority
           />
         </div>

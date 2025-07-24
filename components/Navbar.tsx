@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sun, Moon } from "lucide-react";
+import Image from "next/image";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -48,6 +49,14 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 w-full bg-white/80 dark:bg-gray-950/80 backdrop-blur border-b border-gray-200 dark:border-gray-800 shadow-sm">
       <div className="max-w-screen-xl mx-auto flex items-center justify-between px-4 sm:px-6 py-3">
         <div className="flex items-center gap-3">
+          <Image
+            src="/slam-logo.png"
+            alt="SLAM Robotics Logo"
+            width={40}
+            height={40}
+            className="rounded-md shadow-sm bg-white dark:bg-gray-900 p-1"
+            priority
+          />
           <span className="font-extrabold text-xl sm:text-2xl tracking-tight text-blue-700 dark:text-blue-400 select-none">SLAM Robotics</span>
         </div>
         <div className="hidden md:flex gap-2">
