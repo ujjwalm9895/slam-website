@@ -58,20 +58,20 @@ export default function AboutPageClient() {
 
       {/* Narrative Story Section */}
       <section className="flex justify-center px-2 animate-fade-in">
-        <div className="relative max-w-2xl w-full glassmorphic-card rounded-3xl p-8 shadow-2xl border border-blue-100 dark:border-blue-900 bg-white/70 dark:bg-gray-900/70 backdrop-blur-lg">
+        <div className="relative max-w-2xl w-full glassmorphic-card rounded-3xl p-8 shadow-2xl border border-blue-100 dark:border-blue-900 bg-white/80 dark:bg-gray-900/90 backdrop-blur-lg">
           <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-400 via-blue-600 to-blue-400 rounded-full p-2 shadow-lg animate-pulse">
             <Sparkles className="size-8 text-white" />
           </div>
-          <blockquote className="italic text-blue-800 dark:text-blue-300 text-xl font-semibold text-center mb-4">
+          <blockquote className="italic text-xl font-semibold text-center mb-4 text-blue-800 dark:text-blue-200 dark:drop-shadow-glow bg-gradient-to-r from-blue-400 via-blue-300 to-blue-500 dark:from-blue-300 dark:via-blue-400 dark:to-blue-500 bg-clip-text text-transparent dark:text-transparent animate-glow-text">
             We believe the next green revolution in India will be powered by empathy, intelligence, and robotics
           </blockquote>
-          <p className="text-gray-700 dark:text-gray-200 text-lg leading-relaxed text-center mb-2">
+          <p className="text-gray-700 dark:text-gray-100 text-lg leading-relaxed text-center mb-2">
             We saw the challenges faced by Indian farmers—labor shortages, inefficiency, and a lack of accessible automation. With expertise in robotics and AI, we set out to make a difference.
           </p>
-          <p className="text-gray-700 dark:text-gray-200 text-lg leading-relaxed text-center mb-2">
+          <p className="text-gray-700 dark:text-gray-100 text-lg leading-relaxed text-center mb-2">
             Inspired by the resilience and hope of the farming community, our mission became clear: make robotics truly accessible, restore dignity, and boost productivity for every farmer.
           </p>
-          <p className="text-gray-700 dark:text-gray-200 text-lg leading-relaxed text-center font-semibold">
+          <p className="text-gray-700 dark:text-gray-100 text-lg leading-relaxed text-center font-semibold">
             Today, we are building technology that uplifts communities, inspires innovation, and plants the seeds for a sustainable tomorrow in Indian agriculture.
           </p>
         </div>
@@ -150,6 +150,21 @@ export default function AboutPageClient() {
           background: rgba(255,255,255,0.7);
           box-shadow: 0 8px 32px 0 rgba(31,38,135,0.15);
           backdrop-filter: blur(8px);
+        }
+        .dark .glassmorphic-card {
+          background: rgba(20, 30, 50, 0.92);
+          box-shadow: 0 8px 32px 0 rgba(31,38,135,0.25);
+          border: 1.5px solid #334155;
+        }
+        .dark .drop-shadow-glow {
+          filter: drop-shadow(0 0 8px #60a5fa) drop-shadow(0 0 16px #3b82f6);
+        }
+        .animate-glow-text {
+          animation: glowText 2.5s ease-in-out infinite alternate;
+        }
+        @keyframes glowText {
+          0% { text-shadow: 0 0 8px #60a5fa, 0 0 16px #3b82f6; }
+          100% { text-shadow: 0 0 16px #3b82f6, 0 0 32px #60a5fa; }
         }
         .animate-fade-in {
           animation: fadeInUp 1s cubic-bezier(0.23, 1, 0.32, 1);
