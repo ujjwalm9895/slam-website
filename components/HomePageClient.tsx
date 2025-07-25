@@ -2,7 +2,7 @@
 import AnimatedHomeHero from "@/components/AnimatedHomeHero";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Image from "next/image";
-import { Leaf, Droplets, Users, DollarSign, Radar, ShieldCheck, RefreshCw, Layers3 } from "lucide-react";
+import { Leaf, Droplets, Users, DollarSign, Radar, ShieldCheck, RefreshCw, Layers3, Quote } from "lucide-react";
 
 export default function HomePageClient() {
   return (
@@ -99,6 +99,35 @@ export default function HomePageClient() {
             <b>SLAM — Sense. Learn. Act. Move.</b> <br />
             <span className="text-base font-normal">Empowering Indian farmers with robotics and automation for a smarter, more sustainable future.</span>
           </span>
+        </div>
+      </section>
+
+      {/* Testimonial Section */}
+      <section className="w-full max-w-5xl mx-auto flex flex-col items-center gap-8 py-10 animate-fade-in">
+        <h2 className="text-2xl sm:text-3xl font-bold text-blue-700 dark:text-blue-400 text-center mb-2">What Farmers Say</h2>
+        <div className="flex flex-col sm:flex-row gap-8 w-full justify-center">
+          {/* Testimonial Card 1 */}
+          <div className="flex-1 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-green-200 dark:border-green-800 p-8 flex flex-col gap-4 items-center max-w-xl mx-auto relative">
+            <Quote className="absolute -top-6 left-6 size-10 text-green-500 bg-white dark:bg-gray-900 rounded-full shadow p-2" />
+            <p className="text-lg text-gray-800 dark:text-gray-100 italic text-center font-medium">
+              “SLAM robot se kheti bahut asaan ho gayi hai. Ab hum zyada time bacha paate hain aur har kone ki monitoring ho jaati hai.”
+            </p>
+            <div className="flex flex-col items-center mt-2">
+              <span className="font-bold text-green-700 dark:text-green-400 text-base">Surendra Singh Gurnjar</span>
+              <span className="text-sm text-gray-500 dark:text-gray-300">Bindardi, Chhabra, Rajasthan</span>
+            </div>
+          </div>
+          {/* Testimonial Card 2 */}
+          <div className="flex-1 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-orange-200 dark:border-orange-500 p-8 flex flex-col gap-4 items-center max-w-xl mx-auto relative">
+            <Quote className="absolute -top-6 left-6 size-10 text-orange-400 bg-white dark:bg-gray-900 rounded-full shadow p-2" />
+            <p className="text-lg text-gray-800 dark:text-gray-100 italic text-center font-medium">
+              “SLAM robot se harvesting acche se ho jati he. Ab humare liye kaam asaan ho gaya hai.”
+            </p>
+            <div className="flex flex-col items-center mt-2">
+              <span className="font-bold text-orange-700 dark:text-orange-400 text-base">Rupsingh Meena</span>
+              <span className="text-sm text-gray-500 dark:text-gray-300">Seeswali, Mangrol, Baran, Rajasthan</span>
+            </div>
+          </div>
         </div>
       </section>
 
