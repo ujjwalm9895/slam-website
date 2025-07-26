@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   
   // Image optimization settings
   images: {
-    domains: ['localhost', 'klipsmart.shop', 'www.klipsmart.shop'],
+    domains: ['localhost', 'klipsmart.shop', 'www.klipsmart.shop', '*.run.app'],
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60,
   },

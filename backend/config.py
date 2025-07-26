@@ -1,22 +1,29 @@
 from pydantic_settings import BaseSettings
-from typing import Optional
+from typing import Optional, List
 import os
 
 class Settings(BaseSettings):
+    # Database settings
     database_url: str = "sqlite+aiosqlite:///./agri_platform.db"
     database_name: str = "agri_platform"
+    
+    # Security settings
     secret_key: str = "your-secret-key-change-this-in-production"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
+    
+    # Server settings
     host: str = "0.0.0.0"
     port: int = 8000
     debug: bool = True
-    allowed_origins: list = [
+    
+    # CORS settings
+    allowed_origins: List[str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "https://klipsmart.shop",
         "https://www.klipsmart.shop",
-        "https://slam-frontend-xyz123-uc.a.run.app"
+        "https://*.run.app"
     ]
     
     # Email settings
@@ -32,6 +39,9 @@ class Settings(BaseSettings):
     # Upload settings
     upload_dir: str = "uploads"
     max_file_size: int = 10 * 1024 * 1024  # 10MB
+    
+    # Logging settings
+    log_level: str = "info"
     
     class Config:
         env_file = ".env"

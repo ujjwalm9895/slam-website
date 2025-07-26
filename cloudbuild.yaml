@@ -105,10 +105,27 @@ steps:
       - '--timeout'
       - '300'
       - '--set-env-vars'
-      - 'NEXT_PUBLIC_API_URL=https://slam-backend-$PROJECT_ID-uc.a.run.app/api,NODE_ENV=production'
+      - 'NEXT_PUBLIC_API_URL=https://slam-backend-$PROJECT_ID-uc.a.run.app/api,NODE_ENV=production,VERCEL_URL=klipsmart.shop'
     waitFor: ['build-frontend']
 
-  # Step 7: Wait for deployments to be ready
+  # Step 7: Map custom domain to frontend
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'map-domain'
+    args:
+      - 'run'
+      - 'domain-mappings'
+      - 'create'
+      - '--service'
+      - 'slam-frontend'
+      - '--domain'
+      - 'klipsmart.shop'
+      - '--region'
+      - '$_REGION'
+      - '--force-override'
+    allowFailure: true
+    waitFor: ['deploy-frontend']
+
+  # Step 8: Wait for deployments to be ready
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       - 'run'
@@ -133,7 +150,7 @@ steps:
       - 'value(status.conditions[0].status)'
     waitFor: ['deploy-frontend']
 
-  # Step 8: Get service URLs and display deployment info
+  # Step 9: Get service URLs and display deployment info
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       - 'run'
@@ -144,7 +161,7 @@ steps:
       - '--format'
       - 'table(name,status.url,status.latestReadyRevisionName)'
 
-  # Step 9: Run health checks
+  # Step 10: Run health checks
   - name: 'gcr.io/cloud-builders/curl'
     entrypoint: 'bash'
     args:
@@ -153,22 +170,24 @@ steps:
         echo "🔍 Running health checks..."
         
         # Get backend URL
-        BACKEND_URL=$(gcloud run services describe slam-backend --region=$_REGION --format="value(status.url)")
-        echo "Backend URL: $BACKEND_URL"
+        BACKEND_URL_VAR=$(gcloud run services describe slam-backend --region=$_REGION --format="value(status.url)")
+        echo "Backend URL: $BACKEND_URL_VAR"
         
         # Health check backend
         echo "Checking backend health..."
-        curl -f "$BACKEND_URL/health" || echo "❌ Backend health check failed"
+        curl -f "$BACKEND_URL_VAR/health" || echo "❌ Backend health check failed"
         
         # Get frontend URL
-        FRONTEND_URL=$(gcloud run services describe slam-frontend --region=$_REGION --format="value(status.url)")
-        echo "Frontend URL: $FRONTEND_URL"
+        FRONTEND_URL_VAR=$(gcloud run services describe slam-frontend --region=$_REGION --format="value(status.url)")
+        echo "Frontend URL: $FRONTEND_URL_VAR"
+        echo "Custom Domain: https://klipsmart.shop"
         
         # Health check frontend
         echo "Checking frontend health..."
-        curl -f "$FRONTEND_URL/api/health" || echo "❌ Frontend health check failed"
+        curl -f "$FRONTEND_URL_VAR/api/health" || echo "❌ Frontend health check failed"
         
         echo "✅ Deployment completed successfully!"
+        echo "🌐 Your website is available at: https://klipsmart.shop"
 
 images:
   - 'gcr.io/$PROJECT_ID/slam-frontend:$SHORT_SHA'

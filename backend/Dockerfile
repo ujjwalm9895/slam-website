@@ -47,7 +47,7 @@ ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 ENV PATH=/root/.local/bin:$PATH
 
-# Health check
+# Health check (curl is available from base image)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8000/health || exit 1
 
