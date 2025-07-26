@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: slam-frontend
+  labels:
+    app: slam-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: slam-frontend
+  template:
+    metadata:
+      labels:
+        app: slam-frontend
+    spec:
+      containers:
+      - name: slam-frontend
+        image: gcr.io/PROJECT_ID/slam-frontend:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NEXT_PUBLIC_API_URL
+          value: "https://slam-backend-service"
+        - name: NEXT_PUBLIC_AUTH_ENABLED
+          value: "true"
+        - name: NODE_ENV
+          value: "production"
+        - name: CONTACT_EMAIL_PASS
+          valueFrom:
+            secretKeyRef:
+              name: slam-secrets
+              key: CONTACT_EMAIL_PASS
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      imagePullSecrets:
+      - name: gcr-secret 

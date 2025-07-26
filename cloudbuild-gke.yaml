@@ -1,5 +1,5 @@
-# SLAM Robotics Full-Stack GKE Deployment
-# Deploys both frontend and backend to GKE in one commit
+# GKE Deployment Cloud Build config for SLAM Robotics
+# Deploys both frontend and backend to Google Kubernetes Engine
 
 substitutions:
   _CLUSTER_NAME: "slam-cluster"   # GKE cluster name
@@ -24,7 +24,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: [ 'push', 'gcr.io/$PROJECT_ID/slam-backend:$SHORT_SHA' ]
 
-  # Create GKE cluster if it doesn't exist (cost-optimized)
+  # Create GKE cluster if it doesn't exist
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       [
@@ -91,23 +91,10 @@ steps:
   - name: 'gcr.io/cloud-builders/kubectl'
     args: [ 'rollout', 'status', 'deployment/slam-backend' ]
 
-  # Reserve static IP for domain
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args: [ 'compute', 'addresses', 'create', 'slam-ip', '--global' ]
-    allowFailure: true
-
-  # Get static IP for DNS setup
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args:
-      [
-        'compute', 'addresses', 'describe', 'slam-ip',
-        '--global', '--format=value(address)'
-      ]
-
 images:
   - 'gcr.io/$PROJECT_ID/slam-frontend:$SHORT_SHA'
   - 'gcr.io/$PROJECT_ID/slam-backend:$SHORT_SHA'
 
 options:
   logging: CLOUD_LOGGING_ONLY
-  machineType: 'E2_HIGHCPU_4'
+  machineType: 'E2_HIGHCPU_4' 

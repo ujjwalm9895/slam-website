@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: slam-backend
+  labels:
+    app: slam-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: slam-backend
+  template:
+    metadata:
+      labels:
+        app: slam-backend
+    spec:
+      containers:
+      - name: slam-backend
+        image: gcr.io/PROJECT_ID/slam-backend:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: slam-secrets
+              key: DATABASE_URL
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: slam-secrets
+              key: SECRET_KEY
+        - name: ALGORITHM
+          value: "HS256"
+        - name: ACCESS_TOKEN_EXPIRE_MINUTES
+          value: "30"
+        - name: HOST
+          value: "0.0.0.0"
+        - name: PORT
+          value: "8000"
+        - name: DEBUG
+          value: "false"
+        - name: ALLOWED_ORIGINS
+          value: '["https://klipsmart.shop", "https://www.klipsmart.shop", "https://slam-frontend-service"]'
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      imagePullSecrets:
+      - name: gcr-secret 

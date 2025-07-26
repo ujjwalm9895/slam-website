@@ -1,0 +1,51 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: slam-ingress
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: "slam-ip"
+    networking.gke.io/managed-certificates: "slam-cert"
+    kubernetes.io/ingress.allow-http: "false"
+spec:
+  rules:
+  - host: klipsmart.shop
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: slam-frontend-service
+            port:
+              number: 80
+  - host: www.klipsmart.shop
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: slam-frontend-service
+            port:
+              number: 80
+  - host: api.klipsmart.shop
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: slam-backend-service
+            port:
+              number: 80
+---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: slam-cert
+spec:
+  domains:
+  - klipsmart.shop
+  - www.klipsmart.shop
+  - api.klipsmart.shop 

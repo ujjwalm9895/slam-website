@@ -1,0 +1,57 @@
+# Full-stack Cloud Build config for Agriculture Platform
+# Deploys both frontend (Cloud Run) and backend (Cloud Run)
+# Keeps existing frontend deployment working
+
+substitutions:
+  _FRONTEND_SERVICE: "slam-website"   # Your existing frontend service
+  _BACKEND_SERVICE: "agriculture-backend"   # New backend service
+  _REGION: "us-central1"     # Default region
+  _GMAIL_APP_PASSWORD: "rgeu ouzv ebeb borr"  # Your existing email password
+
+steps:
+  # Build Frontend Docker image (your existing setup)
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/nextjs-slam:$SHORT_SHA', '.' ]
+
+  # Push Frontend Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [ 'push', 'gcr.io/$PROJECT_ID/nextjs-slam:$SHORT_SHA' ]
+
+  # Build Backend Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/agriculture-backend:$SHORT_SHA', '-f', 'backend/Dockerfile', './backend' ]
+
+  # Push Backend Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [ 'push', 'gcr.io/$PROJECT_ID/agriculture-backend:$SHORT_SHA' ]
+
+  # Deploy Frontend to Cloud Run (your existing service)
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      [
+        'run', 'deploy', '$_FRONTEND_SERVICE',
+        '--image', 'gcr.io/$PROJECT_ID/nextjs-slam:$SHORT_SHA',
+        '--region', '$_REGION',
+        '--platform', 'managed',
+        '--allow-unauthenticated',
+        '--set-env-vars', 'CONTACT_EMAIL_PASS=$_GMAIL_APP_PASSWORD,NEXT_PUBLIC_API_URL=https://$_BACKEND_SERVICE-$_REGION.a.run.app'
+      ]
+
+  # Deploy Backend to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      [
+        'run', 'deploy', '$_BACKEND_SERVICE',
+        '--image', 'gcr.io/$PROJECT_ID/agriculture-backend:$SHORT_SHA',
+        '--region', '$_REGION',
+        '--platform', 'managed',
+        '--allow-unauthenticated',
+        '--set-env-vars', 'DATABASE_URL=sqlite:///./agri_platform.db,SECRET_KEY=your-production-secret-key,ALGORITHM=HS256,ACCESS_TOKEN_EXPIRE_MINUTES=30,HOST=0.0.0.0,PORT=8000,DEBUG=false,ALLOWED_ORIGINS=["https://$_FRONTEND_SERVICE-$_REGION.a.run.app"]'
+      ]
+
+images:
+  - 'gcr.io/$PROJECT_ID/nextjs-slam:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/agriculture-backend:$SHORT_SHA'
+
+options:
+  logging: CLOUD_LOGGING_ONLY 
