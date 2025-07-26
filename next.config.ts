@@ -2,9 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  experimental: {
-    serverComponentsExternalPackages: ['sqlmodel'],
-  },
+  serverExternalPackages: ['sqlmodel'],
   images: {
     domains: ['localhost', 'your-domain.com'],
   },
