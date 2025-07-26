@@ -37,6 +37,16 @@ export default function ProductPageClient() {
   const [selectedExpert, setSelectedExpert] = useState<any | null>(null);
   const [showLearnMore, setShowLearnMore] = useState(false);
   
+  // Consultation form state
+  const [consultationForm, setConsultationForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    serviceType: "",
+    preferredDate: "",
+    notes: ""
+  });
+  
   // Loading states
   const [loading, setLoading] = useState({
     farmers: false,
