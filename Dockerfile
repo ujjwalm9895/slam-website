@@ -1,21 +1,22 @@
 # Multi-stage build for faster builds and smaller images
-FROM node:20-alpine AS base
+FROM node:18-alpine AS base
 
 # Install dependencies only when needed
-FROM node:20-alpine AS deps
+FROM base AS deps
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci --frozen-lockfile
+COPY package*.json ./
+RUN npm ci
 
 # Rebuild the source code only when needed
-FROM node:20-alpine AS builder
+FROM base AS builder
 WORKDIR /app
+COPY package*.json ./
+RUN npm ci
 COPY . .
-COPY --from=deps /app/node_modules ./node_modules
 RUN npm run build
 
 # Production image, copy all the files and run next
-FROM node:20-alpine AS runner
+FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
@@ -41,6 +42,4 @@ EXPOSE 3000
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
-CMD ["node", "server.js"]
-
-# sd?
+CMD ["node", "server.js"] 
