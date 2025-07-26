@@ -1,5 +1,5 @@
-# SLAM Robotics Full-Stack GKE Deployment
-# Deploys both frontend and backend to GKE in one commit
+# SLAM Robotics Full-Stack GKE Deployment - OPTIMIZED
+# Deploys both frontend and backend to GKE in one commit with parallel builds
 
 substitutions:
   _CLUSTER_NAME: "slam-cluster"   # GKE cluster name
@@ -8,23 +8,27 @@ substitutions:
   _GMAIL_APP_PASSWORD: "rgeu ouzv ebeb borr"  # Your existing email password
 
 steps:
-  # Build Frontend Docker image
+  # Parallel Docker builds for faster deployment
   - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-frontend'
     args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/slam-frontend:$SHORT_SHA', '.' ]
+    waitFor: ['-']
 
-  # Push Frontend Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-backend'
+    args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/slam-backend:$SHORT_SHA', '-f', 'backend/Dockerfile', './backend' ]
+    waitFor: ['-']
+
+  # Parallel image pushes
   - name: 'gcr.io/cloud-builders/docker'
     args: [ 'push', 'gcr.io/$PROJECT_ID/slam-frontend:$SHORT_SHA' ]
+    waitFor: ['build-frontend']
 
-  # Build Backend Docker image
-  - name: 'gcr.io/cloud-builders/docker'
-    args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/slam-backend:$SHORT_SHA', '-f', 'backend/Dockerfile', './backend' ]
-
-  # Push Backend Docker image
   - name: 'gcr.io/cloud-builders/docker'
     args: [ 'push', 'gcr.io/$PROJECT_ID/slam-backend:$SHORT_SHA' ]
+    waitFor: ['build-backend']
 
-  # Create GKE cluster if it doesn't exist (cost-optimized)
+  # Create GKE cluster if it doesn't exist (optimized)
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       [
@@ -34,9 +38,11 @@ steps:
         '--min-nodes', '1',
         '--max-nodes', '3',
         '--enable-autoscaling',
-        '--machine-type', 'e2-small',
+        '--machine-type', 'e2-standard-2',
         '--disk-size', '20',
         '--enable-ip-alias',
+        '--enable-autorepair',
+        '--enable-autoupgrade',
         '--quiet'
       ]
     allowFailure: true
@@ -50,7 +56,7 @@ steps:
         '--project', '$PROJECT_ID'
       ]
 
-  # Create Kubernetes secrets
+  # Create Kubernetes secrets (optimized)
   - name: 'gcr.io/cloud-builders/kubectl'
     env:
       - 'CLOUDSDK_COMPUTE_ZONE=$_ZONE'
@@ -70,7 +76,7 @@ steps:
       - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
     args: [ 'apply', '-f', 'gcp-deployment/kubernetes/' ]
 
-  # Update deployments with new images
+  # Parallel deployment updates
   - name: 'gcr.io/cloud-builders/kubectl'
     env:
       - 'CLOUDSDK_COMPUTE_ZONE=$_ZONE'
@@ -81,6 +87,7 @@ steps:
         'deployment/slam-frontend',
         'slam-frontend=gcr.io/$PROJECT_ID/slam-frontend:$SHORT_SHA'
       ]
+    waitFor: ['build-frontend']
 
   - name: 'gcr.io/cloud-builders/kubectl'
     env:
@@ -92,19 +99,36 @@ steps:
         'deployment/slam-backend',
         'slam-backend=gcr.io/$PROJECT_ID/slam-backend:$SHORT_SHA'
       ]
+    waitFor: ['build-backend']
 
-  # Wait for deployments to be ready
+  # Wait for deployments with better timeout handling
   - name: 'gcr.io/cloud-builders/kubectl'
     env:
       - 'CLOUDSDK_COMPUTE_ZONE=$_ZONE'
       - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
-    args: [ 'rollout', 'status', 'deployment/slam-frontend' ]
+    script: |
+      echo "Waiting for frontend deployment..."
+      kubectl rollout status deployment/slam-frontend --timeout=600s || {
+        echo "Frontend deployment timeout - checking pod status..."
+        kubectl get pods -l app=slam-frontend
+        kubectl describe deployment slam-frontend
+        exit 1
+      }
+    waitFor: ['build-frontend']
 
   - name: 'gcr.io/cloud-builders/kubectl'
     env:
       - 'CLOUDSDK_COMPUTE_ZONE=$_ZONE'
       - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
-    args: [ 'rollout', 'status', 'deployment/slam-backend' ]
+    script: |
+      echo "Waiting for backend deployment..."
+      kubectl rollout status deployment/slam-backend --timeout=600s || {
+        echo "Backend deployment timeout - checking pod status..."
+        kubectl get pods -l app=slam-backend
+        kubectl describe deployment slam-backend
+        exit 1
+      }
+    waitFor: ['build-backend']
 
   # Reserve static IP for domain
   - name: 'gcr.io/cloud-builders/gcloud'
@@ -125,3 +149,5 @@ images:
 
 options:
   logging: CLOUD_LOGGING_ONLY
+  # Use faster machine type for builds
+  machineType: 'E2_HIGHCPU_8'
