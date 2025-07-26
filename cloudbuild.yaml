@@ -1,71 +1,188 @@
-# SLAM Robotics Cloud Run Deployment - CHEAPEST!
-# Deploys both frontend and backend to Cloud Run
+# SLAM Robotics Production Cloud Build Configuration
+# Deploys full-stack application to Cloud Run with proper logging and monitoring
 
 substitutions:
   _REGION: "us-central1"
   _GMAIL_APP_PASSWORD: "rgeu ouzv ebeb borr"
+  _PROJECT_ID: "slam-website-466808"
 
 steps:
-  # Build frontend Docker image
+  # Step 1: Build Frontend Docker Image
   - name: 'gcr.io/cloud-builders/docker'
-    args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/slam-frontend:$SHORT_SHA', '.' ]
+    id: 'build-frontend'
+    args: 
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/slam-frontend:$SHORT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/slam-frontend:latest'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_API_URL=https://slam-backend-$PROJECT_ID-uc.a.run.app/api'
+      - '.'
+    waitFor: ['-']
 
-  # Build backend Docker image
+  # Step 2: Build Backend Docker Image
   - name: 'gcr.io/cloud-builders/docker'
-    args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/slam-backend:$SHORT_SHA', '-f', 'backend/Dockerfile', './backend' ]
+    id: 'build-backend'
+    args: 
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/slam-backend:$SHORT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/slam-backend:latest'
+      - '-f'
+      - 'backend/Dockerfile'
+      - './backend'
+    waitFor: ['-']
 
-  # Push frontend image
+  # Step 3: Push Frontend Image
   - name: 'gcr.io/cloud-builders/docker'
-    args: [ 'push', 'gcr.io/$PROJECT_ID/slam-frontend:$SHORT_SHA' ]
+    args: ['push', 'gcr.io/$PROJECT_ID/slam-frontend:$SHORT_SHA']
+    waitFor: ['build-frontend']
 
-  # Push backend image
+  # Step 4: Push Backend Image
   - name: 'gcr.io/cloud-builders/docker'
-    args: [ 'push', 'gcr.io/$PROJECT_ID/slam-backend:$SHORT_SHA' ]
+    args: ['push', 'gcr.io/$PROJECT_ID/slam-backend:$SHORT_SHA']
+    waitFor: ['build-backend']
 
-  # Deploy backend to Cloud Run
+  # Step 5: Deploy Backend to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'deploy-backend'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'slam-backend'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/slam-backend:$SHORT_SHA'
+      - '--region'
+      - '$_REGION'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '8000'
+      - '--memory'
+      - '1Gi'
+      - '--cpu'
+      - '1'
+      - '--max-instances'
+      - '10'
+      - '--min-instances'
+      - '0'
+      - '--concurrency'
+      - '80'
+      - '--timeout'
+      - '300'
+      - '--set-env-vars'
+      - 'DATABASE_URL=sqlite:///./agri_platform.db,SECRET_KEY=your-production-secret-key-change-this,JWT_SECRET=your-jwt-secret-change-this,CONTACT_EMAIL_PASS=$_GMAIL_APP_PASSWORD,LOG_LEVEL=info'
+      - '--set-cloudsql-instances'
+      - '$PROJECT_ID:$_REGION:slam-db'
+      - '--add-cloudsql-instances'
+      - '$PROJECT_ID:$_REGION:slam-db'
+    waitFor: ['build-backend']
+
+  # Step 6: Deploy Frontend to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'deploy-frontend'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'slam-frontend'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/slam-frontend:$SHORT_SHA'
+      - '--region'
+      - '$_REGION'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '3000'
+      - '--memory'
+      - '512Mi'
+      - '--cpu'
+      - '1'
+      - '--max-instances'
+      - '10'
+      - '--min-instances'
+      - '0'
+      - '--concurrency'
+      - '80'
+      - '--timeout'
+      - '300'
+      - '--set-env-vars'
+      - 'NEXT_PUBLIC_API_URL=https://slam-backend-$PROJECT_ID-uc.a.run.app/api,NODE_ENV=production'
+    waitFor: ['build-frontend']
+
+  # Step 7: Wait for deployments to be ready
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
-      [
-        'run', 'deploy', 'slam-backend',
-        '--image', 'gcr.io/$PROJECT_ID/slam-backend:$SHORT_SHA',
-        '--region', '$_REGION',
-        '--platform', 'managed',
-        '--allow-unauthenticated',
-        '--port', '8000',
-        '--memory', '1Gi',
-        '--cpu', '1',
-        '--max-instances', '10',
-        '--set-env-vars', 'DATABASE_URL=sqlite:///./agri_platform.db,SECRET_KEY=your-production-secret-key-change-this,JWT_SECRET=your-jwt-secret-change-this,CONTACT_EMAIL_PASS=$_GMAIL_APP_PASSWORD'
-      ]
+      - 'run'
+      - 'services'
+      - 'describe'
+      - 'slam-backend'
+      - '--region'
+      - '$_REGION'
+      - '--format'
+      - 'value(status.conditions[0].status)'
+    waitFor: ['deploy-backend']
 
-  # Deploy frontend to Cloud Run
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
-      [
-        'run', 'deploy', 'slam-frontend',
-        '--image', 'gcr.io/$PROJECT_ID/slam-frontend:$SHORT_SHA',
-        '--region', '$_REGION',
-        '--platform', 'managed',
-        '--allow-unauthenticated',
-        '--port', '3000',
-        '--memory', '512Mi',
-        '--cpu', '1',
-        '--max-instances', '10',
-        '--set-env-vars', 'NEXT_PUBLIC_API_URL=https://slam-backend-$PROJECT_ID-uc.a.run.app/api'
-      ]
+      - 'run'
+      - 'services'
+      - 'describe'
+      - 'slam-frontend'
+      - '--region'
+      - '$_REGION'
+      - '--format'
+      - 'value(status.conditions[0].status)'
+    waitFor: ['deploy-frontend']
 
-  # Get service URLs
+  # Step 8: Get service URLs and display deployment info
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
-      [
-        'run', 'services', 'list',
-        '--region', '$_REGION',
-        '--format', 'table(name,status.url)'
-      ]
+      - 'run'
+      - 'services'
+      - 'list'
+      - '--region'
+      - '$_REGION'
+      - '--format'
+      - 'table(name,status.url,status.latestReadyRevisionName)'
+
+  # Step 9: Run health checks
+  - name: 'gcr.io/cloud-builders/curl'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🔍 Running health checks..."
+        
+        # Get backend URL
+        BACKEND_URL=$(gcloud run services describe slam-backend --region=$_REGION --format="value(status.url)")
+        echo "Backend URL: $BACKEND_URL"
+        
+        # Health check backend
+        echo "Checking backend health..."
+        curl -f "$BACKEND_URL/health" || echo "❌ Backend health check failed"
+        
+        # Get frontend URL
+        FRONTEND_URL=$(gcloud run services describe slam-frontend --region=$_REGION --format="value(status.url)")
+        echo "Frontend URL: $FRONTEND_URL"
+        
+        # Health check frontend
+        echo "Checking frontend health..."
+        curl -f "$FRONTEND_URL/api/health" || echo "❌ Frontend health check failed"
+        
+        echo "✅ Deployment completed successfully!"
 
 images:
   - 'gcr.io/$PROJECT_ID/slam-frontend:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/slam-frontend:latest'
   - 'gcr.io/$PROJECT_ID/slam-backend:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/slam-backend:latest'
 
 options:
   logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_4'
+  diskSizeGb: '50'
+  substitutionOption: 'ALLOW_LOOSE'

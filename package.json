@@ -1,12 +1,13 @@
 {
   "name": "slam-website",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.10",
@@ -17,7 +18,7 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.6",
     "leaflet": "^1.9.4",
-    "lucide-react": "^0.263.1",
+    "lucide-react": "^0.294.0",
     "next": "15.4.3",
     "next-i18next": "^15.4.2",
     "nodemailer": "^7.0.5",
@@ -25,7 +26,8 @@
     "react-dom": "^18.2.0",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.11",
-    "tw-animate-css": "^1.2.5"
+    "tw-animate-css": "^1.2.5",
+    "winston": "^3.11.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -37,6 +39,11 @@
     "eslint": "^8",
     "eslint-config-next": "15.4.3",
     "postcss": "^8",
-    "autoprefixer": "^10.0.1"
+    "autoprefixer": "^10.0.1",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }
