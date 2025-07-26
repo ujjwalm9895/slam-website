@@ -52,6 +52,9 @@ steps:
 
   # Create Kubernetes secrets
   - name: 'gcr.io/cloud-builders/kubectl'
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=$_ZONE'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
     script: |
       kubectl create secret generic slam-secrets \
         --from-literal=DATABASE_URL=sqlite:///./agri_platform.db \
@@ -62,10 +65,16 @@ steps:
 
   # Apply Kubernetes manifests
   - name: 'gcr.io/cloud-builders/kubectl'
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=$_ZONE'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
     args: [ 'apply', '-f', 'gcp-deployment/kubernetes/' ]
 
   # Update deployments with new images
   - name: 'gcr.io/cloud-builders/kubectl'
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=$_ZONE'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
     args:
       [
         'set', 'image',
@@ -74,6 +83,9 @@ steps:
       ]
 
   - name: 'gcr.io/cloud-builders/kubectl'
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=$_ZONE'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
     args:
       [
         'set', 'image',
@@ -83,9 +95,15 @@ steps:
 
   # Wait for deployments to be ready
   - name: 'gcr.io/cloud-builders/kubectl'
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=$_ZONE'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
     args: [ 'rollout', 'status', 'deployment/slam-frontend' ]
 
   - name: 'gcr.io/cloud-builders/kubectl'
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=$_ZONE'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
     args: [ 'rollout', 'status', 'deployment/slam-backend' ]
 
 images:
@@ -93,5 +111,4 @@ images:
   - 'gcr.io/$PROJECT_ID/slam-backend:$SHORT_SHA'
 
 options:
-  logging: CLOUD_LOGGING_ONLY
-  machineType: 'E2_HIGHCPU_8' 
+  logging: CLOUD_LOGGING_ONLY 
