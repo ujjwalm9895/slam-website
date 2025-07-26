@@ -22,22 +22,6 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: [ 'push', 'gcr.io/$PROJECT_ID/slam-backend:$SHORT_SHA' ]
 
-  # Deploy frontend to Cloud Run
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args:
-      [
-        'run', 'deploy', 'slam-frontend',
-        '--image', 'gcr.io/$PROJECT_ID/slam-frontend:$SHORT_SHA',
-        '--region', '$_REGION',
-        '--platform', 'managed',
-        '--allow-unauthenticated',
-        '--port', '3000',
-        '--memory', '512Mi',
-        '--cpu', '1',
-        '--max-instances', '10',
-        '--set-env-vars', 'NEXT_PUBLIC_API_URL=https://slam-backend-xyz123-uc.a.run.app'
-      ]
-
   # Deploy backend to Cloud Run
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
@@ -52,6 +36,22 @@ steps:
         '--cpu', '1',
         '--max-instances', '10',
         '--set-env-vars', 'DATABASE_URL=sqlite:///./agri_platform.db,SECRET_KEY=your-production-secret-key-change-this,JWT_SECRET=your-jwt-secret-change-this,CONTACT_EMAIL_PASS=$_GMAIL_APP_PASSWORD'
+      ]
+
+  # Deploy frontend to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      [
+        'run', 'deploy', 'slam-frontend',
+        '--image', 'gcr.io/$PROJECT_ID/slam-frontend:$SHORT_SHA',
+        '--region', '$_REGION',
+        '--platform', 'managed',
+        '--allow-unauthenticated',
+        '--port', '3000',
+        '--memory', '512Mi',
+        '--cpu', '1',
+        '--max-instances', '10',
+        '--set-env-vars', 'NEXT_PUBLIC_API_URL=https://slam-backend-$PROJECT_ID-uc.a.run.app/api'
       ]
 
   # Get service URLs
