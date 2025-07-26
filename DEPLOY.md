@@ -1,4 +1,4 @@
-# 🚀 SLAM Robotics - Cloud Run Deployment
+# 🚀 SLAM Robotics - Cloud Build + Cloud Run Deployment
 
 ## 💰 **Cost: $5-15/month** (95% cheaper than GKE!)
 
@@ -19,7 +19,7 @@ gcloud config set project slam-website-466808
 # Just commit and push - Cloud Build will handle everything!
 git add .
 git commit -m "Deploy to Cloud Run"
-git push
+git push origin master
 ```
 
 ## 🔧 **What Happens:**
