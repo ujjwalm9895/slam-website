@@ -4,7 +4,6 @@
 substitutions:
   _REGION: "us-central1"
   _GMAIL_APP_PASSWORD: "rgeu ouzv ebeb borr"
-  _PROJECT_ID: "slam-website-466808"
 
 steps:
   # Step 1: Build Frontend Docker Image
@@ -75,10 +74,6 @@ steps:
       - '300'
       - '--set-env-vars'
       - 'DATABASE_URL=sqlite:///./agri_platform.db,SECRET_KEY=your-production-secret-key-change-this,JWT_SECRET=your-jwt-secret-change-this,CONTACT_EMAIL_PASS=$_GMAIL_APP_PASSWORD,LOG_LEVEL=info'
-      - '--set-cloudsql-instances'
-      - '$PROJECT_ID:$_REGION:slam-db'
-      - '--add-cloudsql-instances'
-      - '$PROJECT_ID:$_REGION:slam-db'
     waitFor: ['build-backend']
 
   # Step 6: Deploy Frontend to Cloud Run
@@ -183,6 +178,5 @@ images:
 
 options:
   logging: CLOUD_LOGGING_ONLY
-  # machineType: 'E2_HIGHCPU_4'
   diskSizeGb: '50'
   substitutionOption: 'ALLOW_LOOSE'
