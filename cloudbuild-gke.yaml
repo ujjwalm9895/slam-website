@@ -32,9 +32,9 @@ steps:
         '--zone', '$_ZONE',
         '--num-nodes', '2',
         '--min-nodes', '1',
-        '--max-nodes', '5',
+        '--max-nodes', '3',
         '--enable-autoscaling',
-        '--machine-type', 'e2-micro',
+        '--machine-type', 'e2-small',
         '--disk-size', '20',
         '--enable-ip-alias',
         '--quiet'
