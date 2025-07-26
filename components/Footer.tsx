@@ -4,7 +4,7 @@ import { Linkedin, Github, Mail } from "lucide-react";
 const socials = [
   { href: "https://www.linkedin.com/company/108078285", icon: Linkedin, label: "LinkedIn" },
   { href: "https://github.com", icon: Github, label: "GitHub" },
-  { href: "mailto:info@slamrobotics.com", icon: Mail, label: "Email" },
+  { href: "mailto:slam.robots@gmail.com", icon: Mail, label: "Email" },
 ];
 
 export default function Footer() {
@@ -30,6 +30,9 @@ export default function Footer() {
             </Button>
           ))}
         </div>
+      </div>
+      <div className="w-full text-center mt-4 text-gray-600 dark:text-gray-400 text-sm">
+        For inquiries, contact us at <a href="mailto:slam.robots@gmail.com" className="text-blue-700 dark:text-blue-400 underline">slam.robots@gmail.com</a>
       </div>
     </footer>
   );
