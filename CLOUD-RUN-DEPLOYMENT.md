@@ -188,7 +188,7 @@ gcloud run services update agriculture-backend --region=us-central1
 - **Service logs**: Use `gcloud run services logs read`
 - **Build issues**: Check Cloud Build history
 
----
+--------------
 
 **🎉 Your Agriculture Platform is now deployed on Cloud Run!**
 
