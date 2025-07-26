@@ -34,7 +34,7 @@ steps:
         '--min-nodes', '1',
         '--max-nodes', '3',
         '--enable-autoscaling',
-        '--machine-type', 'e2-standard-2',
+        '--machine-type', 'e2-medium',
         '--disk-size', '20',
         '--enable-ip-alias',
         '--quiet'

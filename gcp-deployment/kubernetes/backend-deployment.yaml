@@ -50,11 +50,11 @@ spec:
           value: '["https://klipsmart.shop", "https://www.klipsmart.shop", "https://slam-frontend-service"]'
         resources:
           requests:
-            memory: "512Mi"
-            cpu: "200m"
+            memory: "384Mi"
+            cpu: "150m"
           limits:
-            memory: "1Gi"
-            cpu: "500m"
+            memory: "768Mi"
+            cpu: "300m"
         livenessProbe:
           httpGet:
             path: /health

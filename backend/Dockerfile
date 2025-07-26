@@ -25,8 +25,13 @@ WORKDIR /app
 
 # Copy only necessary files
 COPY --from=deps /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-COPY --from=builder /app/app ./app
 COPY --from=builder /app/main.py .
+COPY --from=builder /app/models.py .
+COPY --from=builder /app/config.py .
+COPY --from=builder /app/database.py .
+COPY --from=builder /app/api ./api
+COPY --from=builder /app/routes ./routes
+COPY --from=builder /app/utils ./utils
 
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash app
