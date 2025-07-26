@@ -131,8 +131,8 @@ export default function HomePageClient() {
         </div>
       </section>
 
-      {/* Core Benefits Section */}
-      <section className="w-full max-w-5xl flex flex-col items-center gap-10 animate-fade-in">
+      {/* Core Benefits Section - Commented Out */}
+      {/* <section className="w-full max-w-5xl flex flex-col items-center gap-10 animate-fade-in">
         <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-blue-700 dark:text-blue-400">Core Benefits</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 w-full">
           <Card className="flex-1 rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-200 group bg-white dark:bg-gray-900 border border-blue-100 dark:border-blue-900 flex flex-col items-center gap-4 py-8">
@@ -169,7 +169,7 @@ export default function HomePageClient() {
             </CardContent>
           </Card>
         </div>
-      </section>
+      </section> */}
       <style jsx global>{`
         .animate-fade-in {
           animation: fadeInUp 1s cubic-bezier(0.23, 1, 0.32, 1);
