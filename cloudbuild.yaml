@@ -61,7 +61,18 @@ steps:
         '--from-literal=CONTACT_EMAIL_PASS=$_GMAIL_APP_PASSWORD',
         '--dry-run=client', '-o=yaml'
       ]
-    | kubectl apply -f -
+
+  # Apply secrets
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args: [ 'apply', '-f', '-' ]
+    entrypoint: 'bash'
+    script: |
+      kubectl create secret generic slam-secrets \
+        --from-literal=DATABASE_URL=sqlite:///./agri_platform.db \
+        --from-literal=SECRET_KEY=your-production-secret-key-change-this \
+        --from-literal=JWT_SECRET=your-jwt-secret-change-this \
+        --from-literal=CONTACT_EMAIL_PASS=$_GMAIL_APP_PASSWORD \
+        --dry-run=client -o=yaml | kubectl apply -f -
 
   # Apply Kubernetes manifests
   - name: 'gcr.io/cloud-builders/kubectl'
