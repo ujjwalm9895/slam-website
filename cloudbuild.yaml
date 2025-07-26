@@ -1,146 +1,66 @@
-# SLAM Robotics Full-Stack GKE Deployment - OPTIMIZED
-# Deploys both frontend and backend to GKE in one commit with parallel builds
+# SLAM Robotics Cloud Run Deployment - CHEAPEST!
+# Deploys both frontend and backend to Cloud Run
 
 substitutions:
-  _CLUSTER_NAME: "slam-cluster"   # GKE cluster name
-  _ZONE: "us-central1-a"     # GKE cluster zone
-  _REGION: "us-central1"     # Region
-  _GMAIL_APP_PASSWORD: "rgeu ouzv ebeb borr"  # Your existing email password
+  _REGION: "us-central1"
+  _GMAIL_APP_PASSWORD: "rgeu ouzv ebeb borr"
 
 steps:
-  # Parallel Docker builds for faster deployment
+  # Build frontend Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    id: 'build-frontend'
     args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/slam-frontend:$SHORT_SHA', '.' ]
-    waitFor: ['-']
 
+  # Build backend Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    id: 'build-backend'
     args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/slam-backend:$SHORT_SHA', '-f', 'backend/Dockerfile', './backend' ]
-    waitFor: ['-']
 
-  # Parallel image pushes
+  # Push frontend image
   - name: 'gcr.io/cloud-builders/docker'
     args: [ 'push', 'gcr.io/$PROJECT_ID/slam-frontend:$SHORT_SHA' ]
-    waitFor: ['build-frontend']
 
+  # Push backend image
   - name: 'gcr.io/cloud-builders/docker'
     args: [ 'push', 'gcr.io/$PROJECT_ID/slam-backend:$SHORT_SHA' ]
-    waitFor: ['build-backend']
 
-  # Create GKE cluster if it doesn't exist (optimized)
+  # Deploy frontend to Cloud Run
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       [
-        'container', 'clusters', 'create', '$_CLUSTER_NAME',
-        '--zone', '$_ZONE',
-        '--num-nodes', '2',
-        '--min-nodes', '1',
-        '--max-nodes', '3',
-        '--enable-autoscaling',
-        '--machine-type', 'e2-medium',
-        '--disk-size', '20',
-        '--enable-ip-alias',
-        '--enable-autorepair',
-        '--enable-autoupgrade',
-        '--quiet'
+        'run', 'deploy', 'slam-frontend',
+        '--image', 'gcr.io/$PROJECT_ID/slam-frontend:$SHORT_SHA',
+        '--region', '$_REGION',
+        '--platform', 'managed',
+        '--allow-unauthenticated',
+        '--port', '3000',
+        '--memory', '512Mi',
+        '--cpu', '1',
+        '--max-instances', '10',
+        '--set-env-vars', 'NEXT_PUBLIC_API_URL=https://slam-backend-xyz123-uc.a.run.app'
       ]
-    allowFailure: true
 
-  # Get cluster credentials
+  # Deploy backend to Cloud Run
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       [
-        'container', 'clusters', 'get-credentials', '$_CLUSTER_NAME',
-        '--zone', '$_ZONE',
-        '--project', '$PROJECT_ID'
+        'run', 'deploy', 'slam-backend',
+        '--image', 'gcr.io/$PROJECT_ID/slam-backend:$SHORT_SHA',
+        '--region', '$_REGION',
+        '--platform', 'managed',
+        '--allow-unauthenticated',
+        '--port', '8000',
+        '--memory', '1Gi',
+        '--cpu', '1',
+        '--max-instances', '10',
+        '--set-env-vars', 'DATABASE_URL=sqlite:///./agri_platform.db,SECRET_KEY=your-production-secret-key-change-this,JWT_SECRET=your-jwt-secret-change-this,CONTACT_EMAIL_PASS=$_GMAIL_APP_PASSWORD'
       ]
 
-  # Create Kubernetes secrets (optimized)
-  - name: 'gcr.io/cloud-builders/kubectl'
-    env:
-      - 'CLOUDSDK_COMPUTE_ZONE=$_ZONE'
-      - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
-    script: |
-      kubectl create secret generic slam-secrets \
-        --from-literal=DATABASE_URL=sqlite:///./agri_platform.db \
-        --from-literal=SECRET_KEY=your-production-secret-key-change-this \
-        --from-literal=JWT_SECRET=your-jwt-secret-change-this \
-        --from-literal=CONTACT_EMAIL_PASS=$_GMAIL_APP_PASSWORD \
-        --dry-run=client -o=yaml | kubectl apply -f -
-
-  # Apply Kubernetes manifests
-  - name: 'gcr.io/cloud-builders/kubectl'
-    env:
-      - 'CLOUDSDK_COMPUTE_ZONE=$_ZONE'
-      - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
-    args: [ 'apply', '-f', 'gcp-deployment/kubernetes/' ]
-
-  # Parallel deployment updates
-  - name: 'gcr.io/cloud-builders/kubectl'
-    env:
-      - 'CLOUDSDK_COMPUTE_ZONE=$_ZONE'
-      - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
-    args:
-      [
-        'set', 'image',
-        'deployment/slam-frontend',
-        'slam-frontend=gcr.io/$PROJECT_ID/slam-frontend:$SHORT_SHA'
-      ]
-    waitFor: ['build-frontend']
-
-  - name: 'gcr.io/cloud-builders/kubectl'
-    env:
-      - 'CLOUDSDK_COMPUTE_ZONE=$_ZONE'
-      - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
-    args:
-      [
-        'set', 'image',
-        'deployment/slam-backend',
-        'slam-backend=gcr.io/$PROJECT_ID/slam-backend:$SHORT_SHA'
-      ]
-    waitFor: ['build-backend']
-
-  # Wait for deployments with better timeout handling
-  - name: 'gcr.io/cloud-builders/kubectl'
-    env:
-      - 'CLOUDSDK_COMPUTE_ZONE=$_ZONE'
-      - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
-    script: |
-      echo "Waiting for frontend deployment..."
-      kubectl rollout status deployment/slam-frontend --timeout=600s || {
-        echo "Frontend deployment timeout - checking pod status..."
-        kubectl get pods -l app=slam-frontend
-        kubectl describe deployment slam-frontend
-        exit 1
-      }
-    waitFor: ['build-frontend']
-
-  - name: 'gcr.io/cloud-builders/kubectl'
-    env:
-      - 'CLOUDSDK_COMPUTE_ZONE=$_ZONE'
-      - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
-    script: |
-      echo "Waiting for backend deployment..."
-      kubectl rollout status deployment/slam-backend --timeout=600s || {
-        echo "Backend deployment timeout - checking pod status..."
-        kubectl get pods -l app=slam-backend
-        kubectl describe deployment slam-backend
-        exit 1
-      }
-    waitFor: ['build-backend']
-
-  # Reserve static IP for domain
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args: [ 'compute', 'addresses', 'create', 'slam-ip', '--global' ]
-    allowFailure: true
-
-  # Get static IP for DNS setup
+  # Get service URLs
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       [
-        'compute', 'addresses', 'describe', 'slam-ip',
-        '--global', '--format=value(address)'
+        'run', 'services', 'list',
+        '--region', '$_REGION',
+        '--format', 'table(name,status.url)'
       ]
 
 images:

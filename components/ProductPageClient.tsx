@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 // API Base URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://slam-backend-xyz123-uc.a.run.app/api";
 
 const categories = ["All", "Drones", "Tractors", "Robots"];
 
@@ -642,7 +642,7 @@ export default function ProductPageClient() {
                       Contact
                     </button>
                   </div>
-                </CardContent>
+              </CardContent>
               </Card>
             ))}
           </div>
@@ -780,8 +780,8 @@ export default function ProductPageClient() {
                     </button>
                   </div>
                 </CardContent>
-              </Card>
-            ))}
+          </Card>
+        ))}
           </div>
         ) : (
           <div className="text-center py-12">

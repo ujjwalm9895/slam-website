@@ -1,141 +1,137 @@
-from fastapi import APIRouter, HTTPException, status, Depends
-from sqlmodel import select
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import timedelta
-from typing import List
-
-from models import User, UserCreate, UserLogin, UserResponse, Token
-from utils.auth import (
-    get_password_hash,
-    verify_password,
-    create_access_token,
-    get_current_user,
-    get_current_active_user
-)
+from sqlalchemy import select
+from passlib.context import CryptContext
+from jose import JWTError, jwt
+from datetime import datetime, timedelta
+from typing import Optional
 from database import get_session
+from models import User, UserRole
 from config import settings
 
 router = APIRouter()
+security = HTTPBearer()
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-@router.post("/register", response_model=dict)
-async def register(user_data: UserCreate, session: AsyncSession = Depends(get_session)):
-    """Register a new user"""
-    try:
-        # Check if user already exists
-        result = await session.execute(select(User).where(User.email == user_data.email))
-        existing_user = result.scalar_one_or_none()
-        
-        if existing_user:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered"
-            )
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
 
-        # Create user
-        hashed_password = get_password_hash(user_data.password)
-        user = User(
-            email=user_data.email,
-            phone=user_data.phone,
-            name=user_data.name,
-            country=user_data.country,
-            hashed_password=hashed_password,
-            role=user_data.role
-        )
-        
-        session.add(user)
-        await session.commit()
-        await session.refresh(user)
+def get_password_hash(password: str) -> str:
+    return pwd_context.hash(password)
 
-        return {
-            "success": True,
-            "message": "User registered successfully",
-            "data": {
-                "user_id": user.id,
-                "email": user.email,
-                "role": user.role
-            }
-        }
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
+    return encoded_jwt
 
-    except HTTPException:
-        raise
-    except Exception as e:
-        await session.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Registration failed: {str(e)}"
-        )
-
-@router.post("/login", response_model=Token)
-async def login(user_credentials: UserLogin, session: AsyncSession = Depends(get_session)):
-    """Login user and return access token"""
-    try:
-        # Find user by email
-        result = await session.execute(select(User).where(User.email == user_credentials.email))
-        user = result.scalar_one_or_none()
-        
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid email or password"
-            )
-
-        # Verify password
-        if not verify_password(user_credentials.password, user.hashed_password):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid email or password"
-            )
-
-        # Check if user is active and approved
-        if not user.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Account is deactivated"
-            )
-        
-        # For non-admin users, check if they are approved
-        if user.role != "admin" and user.status != "approved":
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Account is {user.status}. Please wait for admin approval."
-            )
-
-        # Create access token
-        access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
-        access_token = create_access_token(
-            data={"sub": user.email, "role": user.role},
-            expires_delta=access_token_expires
-        )
-
-        return Token(access_token=access_token, token_type="bearer")
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Login failed: {str(e)}"
-        )
-
-@router.get("/me", response_model=UserResponse)
-async def get_current_user_info(current_user: User = Depends(get_current_user)):
-    """Get current user information"""
-    return UserResponse(
-        id=current_user.id,
-        email=current_user.email,
-        phone=current_user.phone,
-        name=current_user.name,
-        country=current_user.country,
-        role=current_user.role,
-        is_active=current_user.is_active,
-        is_verified=current_user.is_verified,
-        created_at=current_user.created_at
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    session: AsyncSession = Depends(get_session)
+) -> User:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
     )
+    try:
+        payload = jwt.decode(credentials.credentials, settings.secret_key, algorithms=[settings.algorithm])
+        email: str = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    
+    result = await session.execute(select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
+    if user is None:
+        raise credentials_exception
+    
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Account is deactivated")
+    
+    # For non-admin users, check if they are approved
+    if user.role != UserRole.ADMIN and user.status != "approved":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Account is {user.status}. Please wait for admin approval.")
+    
+    return user
 
-@router.post("/logout", response_model=dict)
-async def logout(current_user: User = Depends(get_current_user)):
-    """Logout user (client should discard token)"""
+@router.post("/register")
+async def register(
+    email: str,
+    password: str,
+    name: str,
+    phone: str,
+    role: UserRole,
+    session: AsyncSession = Depends(get_session)
+):
+    # Check if user already exists
+    result = await session.execute(select(User).where(User.email == email))
+    if result.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Create new user
+    hashed_password = get_password_hash(password)
+    user = User(
+        email=email,
+        hashed_password=hashed_password,
+        name=name,
+        phone=phone,
+        role=role,
+        status="pending" if role != UserRole.ADMIN else "approved"
+    )
+    
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+    
+    return {"message": "User registered successfully", "user_id": user.id}
+
+@router.post("/login")
+async def login(
+    email: str,
+    password: str,
+    session: AsyncSession = Depends(get_session)
+):
+    # Find user
+    result = await session.execute(select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
+    
+    if not user or not verify_password(password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Incorrect email or password")
+    
+    if not user.is_active:
+        raise HTTPException(status_code=400, detail="Account is deactivated")
+    
+    # Create access token
+    access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
+    access_token = create_access_token(
+        data={"sub": user.email}, expires_delta=access_token_expires
+    )
+    
     return {
-        "success": True,
-        "message": "Logged out successfully"
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "role": user.role,
+            "status": user.status
+        }
+    }
+
+@router.get("/me")
+async def get_current_user_info(current_user: User = Depends(get_current_user)):
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        "name": current_user.name,
+        "role": current_user.role,
+        "status": current_user.status
     } 
