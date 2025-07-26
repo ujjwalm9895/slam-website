@@ -183,6 +183,6 @@ images:
 
 options:
   logging: CLOUD_LOGGING_ONLY
-  machineType: 'E2_HIGHCPU_4'
+  # machineType: 'E2_HIGHCPU_4'
   diskSizeGb: '50'
   substitutionOption: 'ALLOW_LOOSE'
