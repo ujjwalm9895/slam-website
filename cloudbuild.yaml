@@ -7,6 +7,10 @@ substitutions:
   _REGION: "us-central1"
   _GMAIL_APP_PASSWORD: "rgeu ouzv ebeb borr"
 
+options:
+  logging: CLOUD_LOGGING_ONLY
+  defaultLogsBucket: gs://slam-website-466808_cloudbuild
+
 steps:
   # Build Frontend Docker image
   - name: 'gcr.io/cloud-builders/docker'
