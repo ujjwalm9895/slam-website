@@ -12,6 +12,12 @@ const nextConfig: NextConfig = {
     domains: ['localhost', 'klipsmart.shop', 'www.klipsmart.shop', 'api.klipsmart.shop', 'slam-frontend-627487702645-us-central1.a.run.app'],
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60,
+    unoptimized: false, // Re-enable optimization for better performance
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Add loader configuration for better image handling
+    loader: 'default',
+    path: '/_next/image',
   },
   
   // Environment variables
