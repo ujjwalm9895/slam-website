@@ -207,7 +207,7 @@ if __name__ == "__main__":
 ### **Database Health Check:**
 ```bash
 # Check if database is accessible
-curl http://localhost:8000/health
+curl https://localhost:8000/health
 ```
 
 ### **View Database Size:**

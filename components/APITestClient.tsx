@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, CheckCircle, XCircle, RefreshCw } from "lucide-react";
 
 // API Base URL
-const API_BASE_URL = "http://localhost:8000/api";
+const API_BASE_URL = "https://localhost:8000/api";
 
 interface TestResult {
   endpoint: string;
@@ -171,7 +171,7 @@ export default function APITestClient() {
       <div className="mt-8 p-6 bg-gray-50 rounded-lg">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Test Instructions:</h3>
         <ol className="list-decimal list-inside space-y-2 text-gray-700">
-          <li>Make sure your FastAPI backend is running on <code className="bg-gray-200 px-2 py-1 rounded">http://localhost:8000</code></li>
+          <li>Make sure your FastAPI backend is running on <code className="bg-gray-200 px-2 py-1 rounded">https://localhost:8000</code></li>
           <li>Click "Run Tests" to test all API endpoints</li>
           <li>Green checkmarks indicate successful API calls</li>
           <li>Red X marks indicate connection errors</li>
