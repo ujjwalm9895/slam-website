@@ -8,13 +8,21 @@ import {
   Loader2,
   Users,
   Building2,
-  Eye
+  Eye,
+  Lock,
+  Shield
 } from "lucide-react";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
   (typeof window !== 'undefined' && window.location.hostname === 'localhost' 
     ? "http://localhost:8000/api"
     : "https://api.klipsmart.shop/api");
+
+// Admin credentials (in production, this should be stored securely)
+const ADMIN_CREDENTIALS = {
+  username: "admin",
+  password: "slam2024"
+};
 
 interface PendingUser {
   id: number;
@@ -28,16 +36,46 @@ interface PendingUser {
 }
 
 export default function AdminPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState<PendingUser | null>(null);
   const [showUserModal, setShowUserModal] = useState(false);
 
   useEffect(() => {
-    fetchPendingUsers();
+    // Check if already authenticated
+    const authStatus = localStorage.getItem("adminAuthenticated");
+    if (authStatus === "true") {
+      setIsAuthenticated(true);
+      fetchPendingUsers();
+    }
   }, []);
 
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError("");
+
+    if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+      setIsAuthenticated(true);
+      localStorage.setItem("adminAuthenticated", "true");
+      fetchPendingUsers();
+    } else {
+      setLoginError("Invalid username or password");
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem("adminAuthenticated");
+    setUsername("");
+    setPassword("");
+  };
+
   const fetchPendingUsers = async () => {
+    setLoading(true);
     try {
       // In a real app, you'd have an admin endpoint
       // For now, we'll simulate this
@@ -160,23 +198,109 @@ export default function AdminPage() {
     }
   };
 
-  if (loading) {
+  // Login Form
+  if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 text-gray-400 mx-auto mb-4 animate-spin" />
-          <p className="text-gray-500">Loading admin panel...</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <div className="mx-auto h-12 w-12 bg-blue-600 rounded-full flex items-center justify-center">
+              <Shield className="h-8 w-8 text-white" />
+            </div>
+            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+              Admin Login
+            </h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Enter your credentials to access the admin panel
+            </p>
+          </div>
+          
+          <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                  Username
+                </label>
+                <div className="mt-1 relative">
+                  <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    required
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                    placeholder="Enter username"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                    <User className="h-5 w-5 text-gray-400" />
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
+                <div className="mt-1 relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                    placeholder="Enter password"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                    <Lock className="h-5 w-5 text-gray-400" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {loginError && (
+              <div className="text-red-600 text-sm text-center bg-red-50 p-3 rounded-md">
+                {loginError}
+              </div>
+            )}
+
+            <div>
+              <button
+                type="submit"
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Sign in
+              </button>
+            </div>
+          </form>
+          
+          <div className="text-center text-xs text-gray-500">
+            <p>Demo Credentials:</p>
+            <p>Username: <strong>admin</strong></p>
+            <p>Password: <strong>slam2024</strong></p>
+          </div>
         </div>
       </div>
     );
   }
 
+  // Admin Dashboard
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Panel</h1>
-          <p className="text-gray-600">Manage user registrations and approvals</p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Panel</h1>
+            <p className="text-gray-600">Manage user registrations and approvals</p>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium transition-colors"
+          >
+            Logout
+          </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -231,7 +355,12 @@ export default function AdminPage() {
           <CardContent className="p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-6">Pending Approvals</h2>
             
-            {pendingUsers.length === 0 ? (
+            {loading ? (
+              <div className="text-center py-12">
+                <Loader2 className="w-8 h-8 text-gray-400 mx-auto mb-4 animate-spin" />
+                <p className="text-gray-500">Loading pending users...</p>
+              </div>
+            ) : pendingUsers.length === 0 ? (
               <div className="text-center py-12">
                 <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-600 mb-2">No Pending Approvals</h3>
