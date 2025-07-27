@@ -2,9 +2,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, CheckCircle, XCircle, RefreshCw } from "lucide-react";
-
-// API Base URL
-const API_BASE_URL = "https://localhost:8000/api";
+import { API_BASE_URL } from "@/lib/api";
 
 interface TestResult {
   endpoint: string;

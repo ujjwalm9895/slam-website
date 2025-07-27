@@ -3,17 +3,16 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
   User, 
-  Users, 
-  Building2, 
-  CheckCircle, 
-  Loader2,
+  Mail, 
+  Phone, 
+  Lock, 
+  MapPin, 
+  Leaf, 
+  GraduationCap, 
+  Building2,
   ArrowLeft
 } from "lucide-react";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
-  (typeof window !== 'undefined' && window.location.hostname === 'localhost' 
-    ? "https://localhost:8000/api"
-    : "https://api.klipsmart.shop/api");
+import { API_BASE_URL } from "@/lib/api";
 
 interface RegistrationForm {
   name: string;
@@ -152,14 +151,14 @@ export default function RegisterPage() {
       case 'farmer':
         return {
           title: 'Farmer Registration',
-          icon: <Users className="w-8 h-8 text-green-600" />,
+          icon: <Leaf className="w-8 h-8 text-green-600" />,
           description: 'Join our community of farmers and share your knowledge',
           color: 'green'
         };
       case 'expert':
         return {
           title: 'Expert Registration',
-          icon: <User className="w-8 h-8 text-blue-600" />,
+          icon: <GraduationCap className="w-8 h-8 text-blue-600" />,
           description: 'Share your expertise and help farmers succeed',
           color: 'blue'
         };
@@ -187,7 +186,7 @@ export default function RegisterPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <CardContent className="p-8 text-center">
-            <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
+            <Leaf className="w-16 h-16 text-green-600 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Registration Successful!</h2>
             <p className="text-gray-600 mb-6">
               Your registration has been submitted successfully. 
@@ -542,7 +541,7 @@ export default function RegisterPage() {
               >
                 {loading ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Leaf className="w-5 h-5 animate-spin" />
                     Registering...
                   </>
                 ) : (

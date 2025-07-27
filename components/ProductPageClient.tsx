@@ -16,12 +16,7 @@ import {
   Sprout,
   Loader2
 } from "lucide-react";
-
-// API Base URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
-  (typeof window !== 'undefined' && window.location.hostname === 'localhost' 
-    ? "https://localhost:8000/api"
-    : "https://api.klipsmart.shop/api");
+import { API_BASE_URL } from "@/lib/api";
 
 // Debug logging
 if (typeof window !== 'undefined') {
@@ -84,7 +79,8 @@ export default function ProductPageClient() {
     setLoading(prev => ({ ...prev, farmers: true }));
     setErrors(prev => ({ ...prev, farmers: "" }));
     try {
-      const response = await fetch(`${API_BASE_URL}/farmers`);
+      const url = `${API_BASE_URL}/farmers`;
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch farmers');
       const data = await response.json();
       setFarmers(data);
@@ -99,7 +95,8 @@ export default function ProductPageClient() {
     setLoading(prev => ({ ...prev, experts: true }));
     setErrors(prev => ({ ...prev, experts: "" }));
     try {
-      const response = await fetch(`${API_BASE_URL}/experts`);
+      const url = `${API_BASE_URL}/experts`;
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch experts');
       const data = await response.json();
       setExperts(data);
@@ -114,7 +111,8 @@ export default function ProductPageClient() {
     setLoading(prev => ({ ...prev, products: true }));
     setErrors(prev => ({ ...prev, products: "" }));
     try {
-      const response = await fetch(`${API_BASE_URL}/products`);
+      const url = `${API_BASE_URL}/products`;
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch products');
       const data = await response.json();
       setProducts(data);
@@ -129,7 +127,8 @@ export default function ProductPageClient() {
     setLoading(prev => ({ ...prev, dealers: true }));
     setErrors(prev => ({ ...prev, dealers: "" }));
     try {
-      const response = await fetch(`${API_BASE_URL}/dealers`);
+      const url = `${API_BASE_URL}/dealers`;
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch dealers');
       const data = await response.json();
       setDealers(data);
@@ -144,7 +143,8 @@ export default function ProductPageClient() {
     setLoading(prev => ({ ...prev, seeds: true }));
     setErrors(prev => ({ ...prev, seeds: "" }));
     try {
-      const response = await fetch(`${API_BASE_URL}/products?category=Seeds`);
+      const url = `${API_BASE_URL}/products?category=Seeds`;
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch seeds and fertilizers');
       const data = await response.json();
       setSeedsAndFertilizers(data);

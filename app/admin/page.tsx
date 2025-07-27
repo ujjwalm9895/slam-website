@@ -3,20 +3,16 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
   User, 
+  Mail, 
+  Phone, 
+  Calendar, 
   CheckCircle, 
   XCircle, 
-  Loader2,
-  Users,
-  Building2,
-  Eye,
-  Lock,
+  Eye, 
+  LogOut,
   Shield
 } from "lucide-react";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
-  (typeof window !== 'undefined' && window.location.hostname === 'localhost' 
-    ? "https://localhost:8000/api"
-    : "https://api.klipsmart.shop/api");
+import { API_BASE_URL } from "@/lib/api";
 
 // Admin credentials (in production, this should be stored securely)
 const ADMIN_CREDENTIALS = {
@@ -177,9 +173,9 @@ export default function AdminPage() {
       case 'expert':
         return <User className="w-5 h-5 text-blue-600" />;
       case 'farmer':
-        return <Users className="w-5 h-5 text-green-600" />;
+        return <User className="w-5 h-5 text-green-600" />;
       case 'dealer':
-        return <Building2 className="w-5 h-5 text-purple-600" />;
+        return <User className="w-5 h-5 text-purple-600" />;
       default:
         return <User className="w-5 h-5 text-gray-600" />;
     }
@@ -254,7 +250,7 @@ export default function AdminPage() {
                     placeholder="Enter password"
                   />
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                    <Lock className="h-5 w-5 text-gray-400" />
+                    <Shield className="h-5 w-5 text-gray-400" />
                   </div>
                 </div>
               </div>
@@ -312,7 +308,7 @@ export default function AdminPage() {
                   <p className="text-2xl font-bold text-gray-900">{pendingUsers.length}</p>
                 </div>
                 <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                  <Users className="w-6 h-6 text-yellow-600" />
+                  <User className="w-6 h-6 text-yellow-600" />
                 </div>
               </div>
             </CardContent>
@@ -344,7 +340,7 @@ export default function AdminPage() {
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Building2 className="w-6 h-6 text-purple-600" />
+                  <User className="w-6 h-6 text-purple-600" />
                 </div>
               </div>
             </CardContent>
@@ -357,7 +353,7 @@ export default function AdminPage() {
             
             {loading ? (
               <div className="text-center py-12">
-                <Loader2 className="w-8 h-8 text-gray-400 mx-auto mb-4 animate-spin" />
+                <Shield className="w-8 h-8 text-gray-400 mx-auto mb-4 animate-spin" />
                 <p className="text-gray-500">Loading pending users...</p>
               </div>
             ) : pendingUsers.length === 0 ? (
