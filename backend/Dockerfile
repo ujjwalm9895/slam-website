@@ -39,12 +39,13 @@ COPY --from=builder /app/api ./api
 # Create logs directory and set permissions
 RUN mkdir -p /app/logs && chown -R app:app /app
 
-# Switch to non-root user
-USER app
-
 # Set environment variables
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
+ENV PATH=/usr/local/bin:$PATH
+
+# Switch to non-root user
+USER app
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
