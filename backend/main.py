@@ -27,18 +27,18 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Application lifespan manager"""
     # Startup
-    logger.info("🚀 Starting SLAM Robotics Agriculture Platform API...")
+    logger.info("Starting SLAM Robotics Agriculture Platform API...")
     try:
         await init_db()
-        logger.info("✅ Database initialized successfully")
+        logger.info("Database initialized successfully")
     except Exception as e:
-        logger.error(f"❌ Database initialization failed: {e}")
+        logger.error(f"Database initialization failed: {e}")
         raise
     
     yield
     
     # Shutdown
-    logger.info("🛑 Shutting down SLAM Robotics Agriculture Platform API...")
+    logger.info("Shutting down SLAM Robotics Agriculture Platform API...")
 
 # Create FastAPI app with proper configuration
 app = FastAPI(
@@ -131,9 +131,9 @@ async def health_check():
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     """Log all incoming requests"""
-    logger.info(f"📥 {request.method} {request.url}")
+    logger.info(f"Request: {request.method} {request.url}")
     response = await call_next(request)
-    logger.info(f"📤 {request.method} {request.url} - {response.status_code}")
+    logger.info(f"Response: {request.method} {request.url} - {response.status_code}")
     return response
 
 if __name__ == "__main__":

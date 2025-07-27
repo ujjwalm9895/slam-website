@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 // API Base URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://slam-backend-xyz123-uc.a.run.app/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 const categories = ["All", "Drones", "Tractors", "Robots"];
 

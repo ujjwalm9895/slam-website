@@ -52,7 +52,7 @@ steps:
         '--memory', '512Mi',
         '--cpu', '1',
         '--max-instances', '10',
-        '--set-env-vars', 'NEXT_PUBLIC_API_URL=https://slam-backend-xxxxx-uc.a.run.app,NEXT_PUBLIC_AUTH_ENABLED=true,NODE_ENV=production,CONTACT_EMAIL_PASS=$_GMAIL_APP_PASSWORD'
+        '--set-env-vars', 'NEXT_PUBLIC_API_URL=https://$_BACKEND_SERVICE-$PROJECT_ID-$_REGION.a.run.app/api,NEXT_PUBLIC_AUTH_ENABLED=true,NODE_ENV=production,CONTACT_EMAIL_PASS=$_GMAIL_APP_PASSWORD'
       ]
 
   # Get service URLs for output

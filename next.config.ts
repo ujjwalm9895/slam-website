@@ -22,8 +22,6 @@ const nextConfig: NextConfig = {
   
   // Experimental features
   experimental: {
-    // Enable server actions
-    serverActions: true,
     // Optimize package imports
     optimizePackageImports: ['lucide-react', 'framer-motion'],
   },
