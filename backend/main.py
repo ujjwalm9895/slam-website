@@ -136,5 +136,7 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=8000,
         reload=settings.debug,
-        log_level="info"
+        log_level="info",
+        ssl_keyfile="key.pem" if not settings.debug else None,
+        ssl_certfile="cert.pem" if not settings.debug else None
     ) 
