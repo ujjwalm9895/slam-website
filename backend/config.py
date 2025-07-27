@@ -4,7 +4,7 @@ import os
 
 class Settings(BaseSettings):
     # Database settings
-    database_url: str = "sqlite+aiosqlite:///./agri_platform.db"
+    database_url: str = "sqlite+aiosqlite:////app/agri_platform.db"
     database_name: str = "agri_platform"
     
     # Security settings

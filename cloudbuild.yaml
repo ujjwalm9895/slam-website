@@ -1,4 +1,4 @@
-# SLAM Robotics - Optimized Cloud Build for Cloud Run
+# SLAM Robotics - Cloud Build for Cloud Run
 # Deploys frontend (Next.js) and backend (FastAPI) to Cloud Run
 
 substitutions:
@@ -31,32 +31,32 @@ steps:
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       [
-        'run', 'deploy', '$_BACKEND_SERVICE',
+        'run', 'deploy', 'slam-backend',
         '--image', 'gcr.io/$PROJECT_ID/slam-backend:latest',
-        '--region', '$_REGION',
+        '--region', 'us-central1',
         '--platform', 'managed',
         '--allow-unauthenticated',
         '--port', '8000',
         '--memory', '512Mi',
         '--cpu', '1',
         '--max-instances', '10',
-        '--set-env-vars', 'DATABASE_URL=sqlite:///./agri_platform.db,SECRET_KEY=your-production-secret-key-change-this,JWT_SECRET=your-jwt-secret-change-this,CONTACT_EMAIL_PASS=$_GMAIL_APP_PASSWORD'
+        '--set-env-vars', 'DATABASE_URL=sqlite+aiosqlite:////app/agri_platform.db,SECRET_KEY=your-production-secret-key-change-this,JWT_SECRET=your-jwt-secret-change-this,CONTACT_EMAIL_PASS=rgeu ouzv ebeb borr'
       ]
 
   # Deploy Frontend to Cloud Run
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       [
-        'run', 'deploy', '$_FRONTEND_SERVICE',
+        'run', 'deploy', 'slam-frontend',
         '--image', 'gcr.io/$PROJECT_ID/slam-frontend:latest',
-        '--region', '$_REGION',
+        '--region', 'us-central1',
         '--platform', 'managed',
         '--allow-unauthenticated',
         '--port', '3000',
         '--memory', '512Mi',
         '--cpu', '1',
         '--max-instances', '10',
-        '--set-env-vars', 'NEXT_PUBLIC_API_URL=https://$_BACKEND_SERVICE-$PROJECT_ID-$_REGION.a.run.app/api,NEXT_PUBLIC_AUTH_ENABLED=true,NODE_ENV=production,CONTACT_EMAIL_PASS=$_GMAIL_APP_PASSWORD'
+        '--set-env-vars', 'NEXT_PUBLIC_API_URL=https://slam-backend-$PROJECT_ID-us-central1.a.run.app/api,NEXT_PUBLIC_AUTH_ENABLED=true,NODE_ENV=production,CONTACT_EMAIL_PASS=rgeu ouzv ebeb borr'
       ]
 
   # Get service URLs for output

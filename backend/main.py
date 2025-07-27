@@ -12,13 +12,12 @@ from database import init_db
 from api import auth, farmers, experts, products, dealers, appointments, orders, admin
 from config import settings
 
-# Configure logging
+# Configure logging to only use stdout (no file logging)
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler('app.log')
+        logging.StreamHandler(sys.stdout)
     ]
 )
 logger = logging.getLogger(__name__)
@@ -103,45 +102,39 @@ app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 # Root endpoint
 @app.get("/")
 async def root():
-    """Root endpoint with basic info"""
+    """Root endpoint with basic information"""
     return {
         "message": "SLAM Robotics Agriculture Platform API",
         "version": "1.0.0",
-        "status": "healthy",
+        "status": "running",
         "docs": "/docs" if settings.debug else None
     }
 
 # Health check endpoint
 @app.get("/health")
 async def health_check():
-    """Health check endpoint for monitoring"""
-    try:
-        # Add any additional health checks here
-        return {
-            "status": "healthy",
-            "timestamp": "2024-01-01T00:00:00Z",
-            "version": "1.0.0",
-            "environment": "production"
-        }
-    except Exception as e:
-        logger.error(f"Health check failed: {e}")
-        raise HTTPException(status_code=503, detail="Service unhealthy")
+    """Health check endpoint for load balancers and monitoring"""
+    return {
+        "status": "healthy",
+        "service": "SLAM Robotics Agriculture Platform API",
+        "version": "1.0.0"
+    }
 
 # Request logging middleware
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     """Log all incoming requests"""
-    logger.info(f"Request: {request.method} {request.url}")
+    logger.info(f"{request.method} {request.url.path}")
     response = await call_next(request)
-    logger.info(f"Response: {request.method} {request.url} - {response.status_code}")
+    logger.info(f"{request.method} {request.url.path} - {response.status_code}")
     return response
 
+# Run the application
 if __name__ == "__main__":
-    logger.info("Starting development server...")
     uvicorn.run(
         "main:app",
-        host=settings.host,
-        port=settings.port,
+        host="0.0.0.0",
+        port=8000,
         reload=settings.debug,
         log_level="info"
     ) 
