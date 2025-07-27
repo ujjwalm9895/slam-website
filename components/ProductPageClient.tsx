@@ -23,6 +23,13 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ||
     ? "http://localhost:8000/api"
     : "https://api.klipsmart.shop/api");
 
+// Debug logging
+if (typeof window !== 'undefined') {
+  console.log('API_BASE_URL:', API_BASE_URL);
+  console.log('NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
+  console.log('Current hostname:', window.location.hostname);
+}
+
 const categories = ["All", "Drones", "Tractors", "Robots"];
 
 export default function ProductPageClient() {
