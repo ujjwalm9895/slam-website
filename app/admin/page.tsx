@@ -124,7 +124,7 @@ export default function AdminPage() {
   const handleApprove = async (userId: number) => {
     try {
       // In a real app, you'd call an admin API
-      const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/approve`, {
+              const response = await secureFetch(`admin/users/${userId}/approve`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -145,7 +145,7 @@ export default function AdminPage() {
   const handleReject = async (userId: number) => {
     try {
       // In a real app, you'd call an admin API
-      const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/reject`, {
+              const response = await secureFetch(`admin/users/${userId}/reject`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' }
       });
