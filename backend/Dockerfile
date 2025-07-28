@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Copy SSL certificates for HTTPS (if they exist)
-COPY key.pem* cert.pem* ./
+# COPY key.pem* cert.pem* ./
 
 # Set environment variables
 ENV PYTHONPATH=/app
