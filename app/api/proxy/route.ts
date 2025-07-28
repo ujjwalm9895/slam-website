@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
       },
+      redirect: 'follow', // Allow redirects on server side
     });
 
     const data = await response.json();
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
+      redirect: 'follow', // Allow redirects on server side
     });
 
     const data = await response.json();

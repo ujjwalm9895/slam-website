@@ -66,17 +66,17 @@ export const secureFetch = async (endpoint: string, options?: RequestInit) => {
   console.log('🛡️ secureFetch() called with endpoint:', endpoint);
   console.log('🔧 Request options:', options);
   
-  // First, try production API with HTTPS
+  // First, try production API with HTTPS and no redirects
   const productionUrl = `https://api.klipsmart.shop/api/${endpoint}`;
   console.log('🌍 Trying production API first:', productionUrl);
   
   try {
-    // Add CORS headers and redirect handling
+    // Add CORS headers and prevent redirects to avoid CORS issues
     const fetchOptions = {
       ...options,
       mode: 'cors' as RequestMode,
       credentials: 'omit' as RequestCredentials,
-      redirect: 'follow' as RequestRedirect,
+      redirect: 'error' as RequestRedirect, // Prevent redirects to avoid CORS issues
       headers: {
         'Content-Type': 'application/json',
         ...options?.headers,
@@ -159,11 +159,11 @@ export const testApiConnectivity = async () => {
   console.log('🧪 === TESTING API CONNECTIVITY ===');
   
   try {
-    console.log('🌍 Testing production API...');
+    console.log('🌍 Testing production API (HTTPS)...');
     const productionResponse = await fetch('https://api.klipsmart.shop/api/health', {
       mode: 'cors',
       credentials: 'omit',
-      redirect: 'follow',
+      redirect: 'error', // Prevent redirects to avoid CORS issues
       headers: {
         'Content-Type': 'application/json',
       },
@@ -179,6 +179,24 @@ export const testApiConnectivity = async () => {
     }
   } catch (error) {
     console.log('❌ Production API error:', error);
+  }
+  
+  // Test proxy if we're in development
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    try {
+      console.log('🔄 Testing proxy API...');
+      const proxyResponse = await fetch('/api/proxy?endpoint=health');
+      console.log('✅ Proxy API status:', proxyResponse.status);
+      
+      if (proxyResponse.ok) {
+        console.log('✅ Proxy API is working!');
+        return 'proxy';
+      } else {
+        console.log('⚠️ Proxy API failed with status:', proxyResponse.status);
+      }
+    } catch (error) {
+      console.log('❌ Proxy API error:', error);
+    }
   }
   
   // Test localhost if we're in development
