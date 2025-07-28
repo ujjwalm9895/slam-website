@@ -56,7 +56,7 @@ export const buildApiUrl = (endpoint: string) => {
 };
 
 // Smart fetch function that tries production first, then falls back to localhost
-export const secureFetch = async (endpoint: string, options?: RequestInit) => {
+export const secureFetch = async (endpoint: string, options?: RequestInit): Promise<Response> => {
   console.log('🛡️ secureFetch() called with endpoint:', endpoint);
   console.log('🔧 Request options:', options);
   
@@ -139,11 +139,11 @@ export const secureFetch = async (endpoint: string, options?: RequestInit) => {
         console.log('❌ Proxy API failed:', proxyError);
         console.log('🔍 Proxy error details:', proxyError instanceof Error ? proxyError.message : String(proxyError));
       }
-    } else {
-      // In production, throw the error
-      console.error('❌ Production API failed');
-      throw productionError;
     }
+    
+    // If we get here, all attempts failed
+    console.error('❌ All API attempts failed');
+    throw productionError;
   }
 };
 
