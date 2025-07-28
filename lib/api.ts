@@ -5,13 +5,7 @@ export const getApiBaseUrl = () => {
   console.log('🔧 NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
   console.log('🌐 Window location:', typeof window !== 'undefined' ? window.location.href : 'N/A');
   
-  // Use environment variable if set
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    console.log('✅ Using NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
-    return process.env.NEXT_PUBLIC_API_URL;
-  }
-  
-  // Always try production API first (https://api.klipsmart.shop)
+  // Always use HTTPS for production API
   console.log('🌍 Using production API URL: https://api.klipsmart.shop/api');
   return "https://api.klipsmart.shop/api";
 };
@@ -66,19 +60,44 @@ export const secureFetch = async (endpoint: string, options?: RequestInit) => {
   console.log('🛡️ secureFetch() called with endpoint:', endpoint);
   console.log('🔧 Request options:', options);
   
-  // First, try production API with HTTPS and no redirects
+  // In development, try proxy first to avoid CORS issues
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    console.log('🔄 Trying proxy API first (development)...');
+    const proxyUrl = `/api/proxy?endpoint=${encodeURIComponent(endpoint)}`;
+    console.log('🔗 Proxy URL:', proxyUrl);
+    
+    try {
+      const proxyResponse = await fetch(proxyUrl, options);
+      console.log('✅ Proxy API response status:', proxyResponse.status);
+      console.log('🔗 Proxy API response URL:', proxyResponse.url);
+      
+      if (proxyResponse.ok) {
+        console.log('✅ Proxy API call successful');
+        return proxyResponse;
+      } else {
+        console.log('⚠️ Proxy API failed with status:', proxyResponse.status);
+        throw new Error(`Proxy API failed: ${proxyResponse.status}`);
+      }
+    } catch (proxyError) {
+      console.log('❌ Proxy API failed:', proxyError);
+      console.log('🔍 Proxy error details:', proxyError instanceof Error ? proxyError.message : String(proxyError));
+    }
+  }
+  
+  // Try production API with HTTPS
   const productionUrl = `https://api.klipsmart.shop/api/${endpoint}`;
-  console.log('🌍 Trying production API first:', productionUrl);
+  console.log('🌍 Trying production API:', productionUrl);
   
   try {
-    // Add CORS headers and prevent redirects to avoid CORS issues
+    // Add CORS headers and allow redirects
     const fetchOptions = {
       ...options,
       mode: 'cors' as RequestMode,
       credentials: 'omit' as RequestCredentials,
-      redirect: 'error' as RequestRedirect, // Prevent redirects to avoid CORS issues
+      redirect: 'follow' as RequestRedirect, // Allow redirects
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         ...options?.headers,
       },
     };
@@ -96,15 +115,18 @@ export const secureFetch = async (endpoint: string, options?: RequestInit) => {
     }
   } catch (productionError) {
     console.log('❌ Production API failed:', productionError);
+    console.log('🔍 Error details:', productionError instanceof Error ? productionError.message : String(productionError));
     
     // Try proxy if we're in development
     if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
       console.log('🔄 Trying proxy API...');
       const proxyUrl = `/api/proxy?endpoint=${encodeURIComponent(endpoint)}`;
+      console.log('🔗 Proxy URL:', proxyUrl);
       
       try {
         const proxyResponse = await fetch(proxyUrl, options);
         console.log('✅ Proxy API response status:', proxyResponse.status);
+        console.log('🔗 Proxy API response URL:', proxyResponse.url);
         
         if (proxyResponse.ok) {
           console.log('✅ Proxy API call successful');
@@ -115,26 +137,11 @@ export const secureFetch = async (endpoint: string, options?: RequestInit) => {
         }
       } catch (proxyError) {
         console.log('❌ Proxy API failed:', proxyError);
-        
-        // Fall back to localhost
-        const localhostUrl = `http://localhost:8000/api/${endpoint}`;
-        console.log('🏠 Falling back to localhost:', localhostUrl);
-        
-        try {
-          const localhostResponse = await fetch(localhostUrl, options);
-          console.log('✅ Localhost API response status:', localhostResponse.status);
-          return localhostResponse;
-        } catch (localhostError) {
-          console.error('❌ All APIs failed');
-          console.error('Production error:', productionError);
-          console.error('Proxy error:', proxyError);
-          console.error('Localhost error:', localhostError);
-          throw localhostError;
-        }
+        console.log('🔍 Proxy error details:', proxyError instanceof Error ? proxyError.message : String(proxyError));
       }
     } else {
-      // In production, don't fall back to localhost
-      console.error('❌ Production API failed and not in localhost');
+      // In production, throw the error
+      console.error('❌ Production API failed');
       throw productionError;
     }
   }
@@ -160,12 +167,13 @@ export const testApiConnectivity = async () => {
   
   try {
     console.log('🌍 Testing production API (HTTPS)...');
-    const productionResponse = await fetch('https://api.klipsmart.shop/api/health', {
+    const productionResponse = await fetch('https://api.klipsmart.shop/health', {
       mode: 'cors',
       credentials: 'omit',
-      redirect: 'error', // Prevent redirects to avoid CORS issues
+      redirect: 'follow', // Allow redirects
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
     });
     console.log('✅ Production API status:', productionResponse.status);
@@ -203,7 +211,7 @@ export const testApiConnectivity = async () => {
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     try {
       console.log('🏠 Testing localhost API...');
-      const localhostResponse = await fetch('http://localhost:8000/api/health');
+      const localhostResponse = await fetch('http://localhost:8000/health');
       console.log('✅ Localhost API status:', localhostResponse.status);
       
       if (localhostResponse.ok) {

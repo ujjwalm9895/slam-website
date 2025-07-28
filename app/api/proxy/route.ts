@@ -15,9 +15,14 @@ export async function GET(request: NextRequest) {
     const response = await fetch(productionUrl, {
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       redirect: 'follow', // Allow redirects on server side
     });
+    
+    console.log('🔄 Proxy response status:', response.status);
+    console.log('🔄 Proxy response URL:', response.url);
+    console.log('🔄 Proxy response headers:', Object.fromEntries(response.headers.entries()));
 
     const data = await response.json();
     
@@ -57,6 +62,9 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
       redirect: 'follow', // Allow redirects on server side
     });
+    
+    console.log('🔄 Proxy POST response status:', response.status);
+    console.log('🔄 Proxy POST response URL:', response.url);
 
     const data = await response.json();
     

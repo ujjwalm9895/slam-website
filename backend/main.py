@@ -52,7 +52,7 @@ app = FastAPI(
 # Security middleware
 app.add_middleware(
     TrustedHostMiddleware, 
-    allowed_hosts=["*"] if settings.debug else ["klipsmart.shop", "www.klipsmart.shop", "*.run.app"]
+    allowed_hosts=["*"] if settings.debug else ["klipsmart.shop", "www.klipsmart.shop", "*.run.app", "api.klipsmart.shop"]
 )
 
 # CORS middleware with proper configuration
@@ -129,14 +129,36 @@ async def log_requests(request: Request, call_next):
     logger.info(f"{request.method} {request.url.path} - {response.status_code}")
     return response
 
+# Forwarded headers middleware for Cloud Run
+@app.middleware("http")
+async def forwarded_headers_middleware(request: Request, call_next):
+    """Handle forwarded headers for Cloud Run"""
+    # Set forwarded headers for Cloud Run
+    if "x-forwarded-proto" in request.headers:
+        request.scope["scheme"] = request.headers["x-forwarded-proto"]
+    if "x-forwarded-host" in request.headers:
+        request.scope["headers"] = [(b"host", request.headers["x-forwarded-host"].encode())]
+    
+    response = await call_next(request)
+    return response
+
 # Run the application
 if __name__ == "__main__":
+    import os
+    
+    # Check if SSL certificates exist
+    ssl_keyfile = "key.pem" if os.path.exists("key.pem") else None
+    ssl_certfile = "cert.pem" if os.path.exists("cert.pem") else None
+    
+    # Use HTTPS if certificates exist, otherwise HTTP
+    port = 8443 if ssl_keyfile and ssl_certfile else 8000
+    
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=8000,
+        port=port,
         reload=settings.debug,
         log_level="info",
-        ssl_keyfile="key.pem" if not settings.debug else None,
-        ssl_certfile="cert.pem" if not settings.debug else None
+        ssl_keyfile=ssl_keyfile,
+        ssl_certfile=ssl_certfile
     ) 

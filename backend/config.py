@@ -24,7 +24,9 @@ class Settings(BaseSettings):
         "https://klipsmart.shop",
         "https://www.klipsmart.shop",
         "https://api.klipsmart.shop",
-        "https://*.run.app"
+        "https://*.run.app",
+        "http://api.klipsmart.shop",  # Add HTTP version for fallback
+        "*"  # Allow all origins for development
     ]
     
     # Email settings

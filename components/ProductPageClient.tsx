@@ -232,11 +232,11 @@ export default function ProductPageClient() {
       console.log('🎯 API connectivity test result:', result);
       
       // Then load data
-      fetchFarmers();
-      fetchExperts();
-      fetchProducts();
-      fetchDealers();
-      fetchSeedsAndFertilizers();
+    fetchFarmers();
+    fetchExperts();
+    fetchProducts();
+    fetchDealers();
+    fetchSeedsAndFertilizers();
     });
   }, []);
 
