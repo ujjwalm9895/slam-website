@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, CheckCircle, XCircle, RefreshCw } from "lucide-react";
-import { API_BASE_URL } from "@/lib/api";
+import { API_BASE_URL, secureFetch } from "@/lib/api";
 
 interface TestResult {
   endpoint: string;
@@ -16,7 +16,7 @@ export default function APITestClient() {
   const [isRunning, setIsRunning] = useState(false);
 
   const endpoints = [
-    { name: 'Health Check', url: 'http://localhost:8000/health' },
+    { name: 'Health Check', url: `${API_BASE_URL.replace('/api', '')}/health` },
     { name: 'Farmers', url: `${API_BASE_URL}/farmers` },
     { name: 'Experts', url: `${API_BASE_URL}/experts` },
     { name: 'Products', url: `${API_BASE_URL}/products` },
@@ -33,7 +33,10 @@ export default function APITestClient() {
     );
 
     try {
-      const response = await fetch(endpoint.url);
+      // Use secureFetch for API endpoints, regular fetch for external URLs
+      const response = endpoint.url.includes('api.klipsmart.shop') || endpoint.url.includes('localhost')
+        ? await secureFetch(endpoint.url.split('/').pop() || '')
+        : await fetch(endpoint.url);
       const data = await response.json();
       
       setTestResults(prev => 
@@ -169,7 +172,7 @@ export default function APITestClient() {
       <div className="mt-8 p-6 bg-gray-50 rounded-lg">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Test Instructions:</h3>
         <ol className="list-decimal list-inside space-y-2 text-gray-700">
-          <li>Make sure your FastAPI backend is running on <code className="bg-gray-200 px-2 py-1 rounded">https://localhost:8000</code></li>
+          <li>Make sure your FastAPI backend is running on <code className="bg-gray-200 px-2 py-1 rounded">{API_BASE_URL.replace('/api', '')}</code></li>
           <li>Click "Run Tests" to test all API endpoints</li>
           <li>Green checkmarks indicate successful API calls</li>
           <li>Red X marks indicate connection errors</li>

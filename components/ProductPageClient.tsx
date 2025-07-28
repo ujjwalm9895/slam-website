@@ -16,7 +16,7 @@ import {
   Sprout,
   Loader2
 } from "lucide-react";
-import { API_BASE_URL } from "@/lib/api";
+import { API_BASE_URL, secureFetch } from "@/lib/api";
 
 // Debug logging
 if (typeof window !== 'undefined') {
@@ -79,8 +79,7 @@ export default function ProductPageClient() {
     setLoading(prev => ({ ...prev, farmers: true }));
     setErrors(prev => ({ ...prev, farmers: "" }));
     try {
-      const url = `${API_BASE_URL}/farmers`;
-      const response = await fetch(url);
+      const response = await secureFetch('farmers');
       if (!response.ok) throw new Error('Failed to fetch farmers');
       const data = await response.json();
       setFarmers(data);
@@ -95,8 +94,7 @@ export default function ProductPageClient() {
     setLoading(prev => ({ ...prev, experts: true }));
     setErrors(prev => ({ ...prev, experts: "" }));
     try {
-      const url = `${API_BASE_URL}/experts`;
-      const response = await fetch(url);
+      const response = await secureFetch('experts');
       if (!response.ok) throw new Error('Failed to fetch experts');
       const data = await response.json();
       setExperts(data);
@@ -111,8 +109,7 @@ export default function ProductPageClient() {
     setLoading(prev => ({ ...prev, products: true }));
     setErrors(prev => ({ ...prev, products: "" }));
     try {
-      const url = `${API_BASE_URL}/products`;
-      const response = await fetch(url);
+      const response = await secureFetch('products');
       if (!response.ok) throw new Error('Failed to fetch products');
       const data = await response.json();
       setProducts(data);
@@ -127,8 +124,7 @@ export default function ProductPageClient() {
     setLoading(prev => ({ ...prev, dealers: true }));
     setErrors(prev => ({ ...prev, dealers: "" }));
     try {
-      const url = `${API_BASE_URL}/dealers`;
-      const response = await fetch(url);
+      const response = await secureFetch('dealers');
       if (!response.ok) throw new Error('Failed to fetch dealers');
       const data = await response.json();
       setDealers(data);
@@ -143,8 +139,7 @@ export default function ProductPageClient() {
     setLoading(prev => ({ ...prev, seeds: true }));
     setErrors(prev => ({ ...prev, seeds: "" }));
     try {
-      const url = `${API_BASE_URL}/products?category=Seeds`;
-      const response = await fetch(url);
+      const response = await secureFetch('products?category=Seeds');
       if (!response.ok) throw new Error('Failed to fetch seeds and fertilizers');
       const data = await response.json();
       setSeedsAndFertilizers(data);

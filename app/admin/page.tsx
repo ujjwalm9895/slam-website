@@ -12,7 +12,7 @@ import {
   LogOut,
   Shield
 } from "lucide-react";
-import { API_BASE_URL } from "@/lib/api";
+import { API_BASE_URL, secureFetch } from "@/lib/api";
 
 // Admin credentials (in production, this should be stored securely)
 const ADMIN_CREDENTIALS = {
@@ -75,7 +75,7 @@ export default function AdminPage() {
     try {
       // In a real app, you'd have an admin endpoint
       // For now, we'll simulate this
-      const response = await fetch(`${API_BASE_URL}/users?status=pending`);
+      const response = await secureFetch('users?status=pending');
       if (response.ok) {
         const data = await response.json();
         setPendingUsers(data);

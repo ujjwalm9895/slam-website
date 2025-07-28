@@ -12,7 +12,7 @@ import {
   Building2,
   ArrowLeft
 } from "lucide-react";
-import { API_BASE_URL } from "@/lib/api";
+import { API_BASE_URL, secureFetch } from "@/lib/api";
 
 interface RegistrationForm {
   name: string;
@@ -83,7 +83,7 @@ export default function RegisterPage() {
         role: userType
       };
 
-      const userResponse = await fetch(`${API_BASE_URL}/auth/register`, {
+      const userResponse = await secureFetch('auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
@@ -105,7 +105,7 @@ export default function RegisterPage() {
           description: `Farmer from ${form.location}`
         };
 
-        await fetch(`${API_BASE_URL}/farmers/profile`, {
+        await secureFetch('farmers/profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(farmerData)
@@ -118,7 +118,7 @@ export default function RegisterPage() {
           consultation_fee: parseFloat(form.consultation_fee || "0")
         };
 
-        await fetch(`${API_BASE_URL}/experts/profile`, {
+        await secureFetch('experts/profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(expertData)
@@ -131,7 +131,7 @@ export default function RegisterPage() {
           description: form.description
         };
 
-        await fetch(`${API_BASE_URL}/dealers/profile`, {
+        await secureFetch('dealers/profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(dealerData)

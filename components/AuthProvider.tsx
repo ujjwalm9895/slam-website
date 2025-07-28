@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { API_BASE_URL } from "@/lib/api";
+import { API_BASE_URL, secureFetch } from "@/lib/api";
 
 interface User {
   id: number;
@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      const response = await secureFetch('auth/me', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await secureFetch('auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('auth_token', data.access_token);
         
         // Get user info
-        const userResponse = await fetch(`${API_BASE_URL}/auth/me`, {
+        const userResponse = await secureFetch('auth/me', {
           headers: {
             'Authorization': `Bearer ${data.access_token}`,
             'Content-Type': 'application/json',
@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (userData: any): Promise<boolean> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      const response = await secureFetch('auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
