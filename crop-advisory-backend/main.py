@@ -1,22 +1,13 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import httpx
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import requests
 import sqlite3
 from datetime import datetime
 import os
 from typing import List, Optional
 
-app = FastAPI(title="Crop Advisory System", version="1.0.0")
-
-# CORS middleware for frontend integration
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # In production, specify your domain
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app = Flask(__name__)
+CORS(app)
 
 # Database setup
 def init_db():
@@ -41,42 +32,27 @@ def init_db():
 # Initialize database on startup
 init_db()
 
-class AdvisoryRequest(BaseModel):
-    name: str
-    location: str
-    crop: str
-
-class AdvisoryResponse(BaseModel):
-    location: str
-    temperature: float
-    humidity: float
-    alerts: List[str]
-    recommendations: List[str]
-    success: bool
-    message: str
-
 # OpenWeatherMap API configuration
 OPENWEATHER_API_KEY = "your_openweather_api_key_here"  # Replace with your API key
 OPENWEATHER_BASE_URL = "http://api.openweathermap.org/data/2.5/weather"
 
-async def get_weather_data(location: str) -> dict:
+def get_weather_data(location: str) -> dict:
     """Fetch weather data from OpenWeatherMap API"""
     try:
-        async with httpx.AsyncClient() as client:
-            params = {
-                "q": location,
-                "appid": OPENWEATHER_API_KEY,
-                "units": "metric"
-            }
-            response = await client.get(OPENWEATHER_BASE_URL, params=params)
-            response.raise_for_status()
-            data = response.json()
-            
-            return {
-                "temperature": data["main"]["temp"],
-                "humidity": data["main"]["humidity"],
-                "description": data["weather"][0]["description"]
-            }
+        params = {
+            "q": location,
+            "appid": OPENWEATHER_API_KEY,
+            "units": "metric"
+        }
+        response = requests.get(OPENWEATHER_BASE_URL, params=params)
+        response.raise_for_status()
+        data = response.json()
+        
+        return {
+            "temperature": data["main"]["temp"],
+            "humidity": data["main"]["humidity"],
+            "description": data["weather"][0]["description"]
+        }
     except Exception as e:
         print(f"Weather API error: {e}")
         # Return default values for demo purposes
@@ -193,46 +169,50 @@ def log_advisory(name: str, location: str, crop: str, temperature: float,
     except Exception as e:
         print(f"Database logging error: {e}")
 
-@app.post("/get-advisory", response_model=AdvisoryResponse)
-async def get_crop_advisory(request: AdvisoryRequest):
+@app.route('/get-advisory', methods=['POST'])
+def get_crop_advisory():
     """Generate crop advisory based on location and weather"""
     try:
+        data = request.get_json()
+        
+        if not data or 'name' not in data or 'location' not in data or 'crop' not in data:
+            return jsonify({"error": "Missing required fields: name, location, crop"}), 400
+        
+        name = data['name']
+        location = data['location']
+        crop = data['crop']
+        
         # Get weather data
-        weather_data = await get_weather_data(request.location)
+        weather_data = get_weather_data(location)
         temperature = weather_data["temperature"]
         humidity = weather_data["humidity"]
         
         # Generate advisory
-        alerts, recommendations = generate_advisory(
-            request.crop, temperature, humidity
-        )
+        alerts, recommendations = generate_advisory(crop, temperature, humidity)
         
         # Log the session
-        log_advisory(
-            request.name, request.location, request.crop,
-            temperature, humidity, alerts, recommendations
-        )
+        log_advisory(name, location, crop, temperature, humidity, alerts, recommendations)
         
-        return AdvisoryResponse(
-            location=request.location,
-            temperature=temperature,
-            humidity=humidity,
-            alerts=alerts,
-            recommendations=recommendations,
-            success=True,
-            message="Advisory generated successfully"
-        )
+        return jsonify({
+            "location": location,
+            "temperature": temperature,
+            "humidity": humidity,
+            "alerts": alerts,
+            "recommendations": recommendations,
+            "success": True,
+            "message": "Advisory generated successfully"
+        })
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating advisory: {str(e)}")
+        return jsonify({"error": f"Error generating advisory: {str(e)}"}), 500
 
-@app.get("/health")
-async def health_check():
+@app.route('/health')
+def health_check():
     """Health check endpoint"""
-    return {"status": "healthy", "service": "Crop Advisory System"}
+    return jsonify({"status": "healthy", "service": "Crop Advisory System"})
 
-@app.get("/logs")
-async def get_logs():
+@app.route('/logs')
+def get_logs():
     """Get recent advisory logs (for debugging)"""
     try:
         conn = sqlite3.connect('advisory_logs.db')
@@ -246,7 +226,7 @@ async def get_logs():
         logs = cursor.fetchall()
         conn.close()
         
-        return {
+        return jsonify({
             "logs": [
                 {
                     "name": log[0],
@@ -260,10 +240,14 @@ async def get_logs():
                 }
                 for log in logs
             ]
-        }
+        })
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching logs: {str(e)}")
+        return jsonify({"error": f"Error fetching logs: {str(e)}"}), 500
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    print("🌾 Starting Crop Advisory System Backend...")
+    print("📍 Server will be available at: http://localhost:8001")
+    print("💚 Health Check: http://localhost:8001/health")
+    print("\nPress Ctrl+C to stop the server")
+    
+    app.run(host="0.0.0.0", port=8001, debug=True) 
