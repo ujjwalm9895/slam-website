@@ -16,7 +16,7 @@ import {
   Sprout,
   Loader2
 } from "lucide-react";
-import { API_BASE_URL, secureFetch } from "@/lib/api";
+import { API_BASE_URL, secureFetch, debugApiConfig, testApiConnectivity } from "@/lib/api";
 
 // Debug logging
 if (typeof window !== 'undefined') {
@@ -76,14 +76,19 @@ export default function ProductPageClient() {
 
   // API Functions
   const fetchFarmers = async () => {
+    console.log('👨‍🌾 fetchFarmers() called');
     setLoading(prev => ({ ...prev, farmers: true }));
     setErrors(prev => ({ ...prev, farmers: "" }));
     try {
+      console.log('📡 Making API call to fetch farmers...');
       const response = await secureFetch('farmers');
+      console.log('📊 Farmers response status:', response.status);
       if (!response.ok) throw new Error('Failed to fetch farmers');
       const data = await response.json();
+      console.log('✅ Farmers data received:', data.length, 'farmers');
       setFarmers(data);
     } catch (error) {
+      console.error('❌ Error fetching farmers:', error);
       setErrors(prev => ({ ...prev, farmers: error instanceof Error ? error.message : 'Unknown error' }));
     } finally {
       setLoading(prev => ({ ...prev, farmers: false }));
@@ -91,14 +96,19 @@ export default function ProductPageClient() {
   };
 
   const fetchExperts = async () => {
+    console.log('🧑‍🔬 fetchExperts() called');
     setLoading(prev => ({ ...prev, experts: true }));
     setErrors(prev => ({ ...prev, experts: "" }));
     try {
+      console.log('📡 Making API call to fetch experts...');
       const response = await secureFetch('experts');
+      console.log('📊 Experts response status:', response.status);
       if (!response.ok) throw new Error('Failed to fetch experts');
       const data = await response.json();
+      console.log('✅ Experts data received:', data.length, 'experts');
       setExperts(data);
     } catch (error) {
+      console.error('❌ Error fetching experts:', error);
       setErrors(prev => ({ ...prev, experts: error instanceof Error ? error.message : 'Unknown error' }));
     } finally {
       setLoading(prev => ({ ...prev, experts: false }));
@@ -214,11 +224,20 @@ export default function ProductPageClient() {
 
   // Load data on component mount
   useEffect(() => {
-    fetchFarmers();
-    fetchExperts();
-    fetchProducts();
-    fetchDealers();
-    fetchSeedsAndFertilizers();
+    console.log('🚀 ProductPageClient mounted');
+    debugApiConfig();
+    
+    // Test API connectivity first
+    testApiConnectivity().then((result) => {
+      console.log('🎯 API connectivity test result:', result);
+      
+      // Then load data
+      fetchFarmers();
+      fetchExperts();
+      fetchProducts();
+      fetchDealers();
+      fetchSeedsAndFertilizers();
+    });
   }, []);
 
   return (
